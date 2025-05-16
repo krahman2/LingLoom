@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    /* ---------- Core ---------- */
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+    /* ---------- Type safety ---------- */
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+
+    /* ---------- Module / JSX ---------- */
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+
+    /* ---------- Next.js plugin ---------- */
+    "plugins": [
+      { "name": "next" }
+    ],
+
+    /* ---------- Path alias (NEW baseUrl!) ---------- */
+    "baseUrl": ".",               // project root
+    "paths": {
+      "@/*": ["./*"]              // "@/components/..." etc.
+    }
+  },
+
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "app/tailwind.config.js"
+  ],
+  "exclude": ["node_modules"]
+}
