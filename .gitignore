@@ -1,0 +1,19 @@
+# Node dependencies
+node_modules/
+
+# Next.js build output
+.next/
+build/
+.cache/
+
+# (Optional) other build or dist folders
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
