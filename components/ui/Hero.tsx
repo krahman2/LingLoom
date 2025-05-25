@@ -1,14 +1,26 @@
+// components/ui/Hero.tsx
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import LanguageBar from "@/components/ui/LanguageBar";
 
 export default function Hero() {
   return (
-    <section className="flex flex-col items-center justify-center text-center min-h-screen px-4 bg-black text-white">
+    <section
+      className="
+        relative
+        flex flex-col items-center justify-center
+        text-center
+        min-h-screen
+        px-4
+        pb-24
+        bg-black text-white
+      "
+    >
       {/* Logo + Company Name */}
-      <div className="flex flex-col items-center mb-6">
+      <div className="flex flex-col items-center mb-3">
         <Image
           src="/images/logo.png"
           alt="LingLoom Logo"
@@ -20,39 +32,43 @@ export default function Hero() {
       </div>
 
       {/* Heading */}
-      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 max-w-3xl">
+      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 max-w-2xl">
         A language-learning app focused on{" "}
         <span className="text-accent">interactive</span> and{" "}
         <span className="text-accent">effective</span> methods
       </h1>
 
       {/* Subheading */}
-      <p className="text-base leading-snug text-muted-foreground mb-8">
+      <p className="text-lg md:text-xl leading-snug text-muted-foreground mb-4">
         If Anki and Duo had a baby—with comprehensible input!
       </p>
 
       {/* Buttons */}
-      <div className="flex gap-4 justify-center flex-wrap">
-        <Button size="lg" variant="secondary">
-          SIGN UP
-        </Button>
-        <Button size="lg" variant="ghost">
-          LOG IN
-        </Button>
+      <div className="flex gap-6 justify-center flex-wrap mb-5">
+        <Link href="/signup">
+          <Button size="lg" variant="secondary">
+            SIGN UP
+          </Button>
+        </Link>
+        <Link href="/login">
+          <Button size="lg" variant="ghost">
+            LOG IN
+          </Button>
+        </Link>
       </div>
 
       {/* Hero Image */}
-      <div className="mt-8">
+      <div className="mt-1">
         <Image
           src="/images/webdesign1.png"
           alt="Hero Illustration"
-          width={500}
-          height={300}
+          width={600}
+          height={360}
         />
       </div>
 
-      {/* extra space before the language bar */}
-      <div className="mt-12 w-full">
+      {/* Language bar pinned to bottom */}
+      <div className="absolute bottom-0 left-0 w-full">
         <LanguageBar />
       </div>
     </section>
