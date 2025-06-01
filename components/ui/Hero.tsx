@@ -17,54 +17,62 @@ export default function Hero() {
         px-4
         pb-24
         bg-black text-white
+        overflow-hidden
       "
     >
       {/* Logo + Company Name */}
-      <div className="flex flex-col items-center mb-3">
+      <div className="flex flex-col items-center mb-6 z-10">
         <Image
           src="/images/logo.png"
           alt="LingLoom Logo"
-          width={40}
-          height={40}
-          className="mb-2"
+          width={50}
+          height={50}
+          className="mb-3"
         />
-        <span className="text-xl font-semibold">LingLoom</span>
+        <span className="text-2xl font-bold">LingLoom</span>
       </div>
 
-      {/* Heading */}
-      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 max-w-2xl">
-        A language-learning app focused on{" "}
-        <span className="text-accent">interactive</span> and{" "}
-        <span className="text-accent">effective</span> methods
-      </h1>
+      {/* Main Content with animated gyph */}
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-12 max-w-6xl mx-auto z-10">
+        
+        {/* Left side - Text content */}
+        <div className="flex-1 text-center lg:text-left">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 max-w-2xl">
+            A language-learning app focused on{" "}
+            <span className="text-accent">interactive</span> and{" "}
+            <span className="text-accent">effective</span> methods
+          </h1>
 
-      {/* Subheading */}
-      <p className="text-lg md:text-xl leading-snug text-muted-foreground mb-4">
-        If Anki and Duo had a baby—with comprehensible input!
-      </p>
+          <p className="text-lg md:text-xl leading-snug text-gray-200 mb-8">
+            The human way to fluency—through cultural immersion and connection.
+          </p>
 
-      {/* Buttons */}
-      <div className="flex gap-6 justify-center flex-wrap mb-5">
-        <Link href="/signup">
-          <Button size="lg" variant="secondary">
-            SIGN UP
-          </Button>
-        </Link>
-        <Link href="/login">
-          <Button size="lg" variant="ghost">
-            LOG IN
-          </Button>
-        </Link>
-      </div>
+          {/* Buttons */}
+          <div className="flex gap-6 justify-center lg:justify-start flex-wrap mb-8">
+            <Link href="/signup">
+              <Button size="lg" variant="secondary">
+                SIGN UP
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="ghost">
+                LOG IN
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-      {/* Hero Image */}
-      <div className="mt-1">
-        <Image
-          src="/images/webdesign1.png"
-          alt="Hero Illustration"
-          width={600}
-          height={360}
-        />
+        {/* Right side - Hero gyph instead of image */}
+        <div className="flex-1 relative flex justify-center items-center">
+          <Image
+            src="/images/Untitled (1024 x 1024 px) (1)/3.gif"
+            alt="Learning animation"
+            width={380} 
+            height={380}
+            className="rounded-full object-contain" 
+            unoptimized
+          />
+        </div>
       </div>
 
       {/* Language bar pinned to bottom */}

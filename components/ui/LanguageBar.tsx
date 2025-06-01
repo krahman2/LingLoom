@@ -14,13 +14,13 @@ const languages = [
     available: true,
   },
   {
-    code: "es",
-    name: "Spanish",
+    code: "in",
+    name: "Marathi",
     available: false,
   },
   {
-    code: "fr",
-    name: "French",
+    code: "in",
+    name: "Telugu",
     available: false,
   },
 ];

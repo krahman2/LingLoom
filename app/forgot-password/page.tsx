@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link href="/signup" className="text-sm text-primary hover:underline">
+          <Link href="/login" className="text-sm text-primary hover:underline">
             Remember your password? Log In
           </Link>
         </div>

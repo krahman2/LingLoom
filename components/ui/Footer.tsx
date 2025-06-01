@@ -1,6 +1,7 @@
 // components/ui/Footer.tsx
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -39,12 +40,11 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-2 text-sm text-white">Explore</h3>
             <nav className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-300">
-              <a href="#">About</a>
-              <a href="#">Mission</a>
-              <a href="#">Founder</a>
-              <a href="#">Courses</a>
-              <a href="#">Approach</a>
-              <a href="#">Contact</a>
+              <Link href="/about">About</Link>
+              <Link href="/mission">Mission</Link>
+              <Link href="/courses">Courses</Link>
+              <Link href="/approach">Approach</Link>
+              <Link href="/contact">Contact</Link>
             </nav>
           </div>
 
