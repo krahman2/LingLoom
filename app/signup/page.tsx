@@ -127,7 +127,7 @@ export default function SignUpPage() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      router.push("/dashboard"); // Redirect to dashboard after successful sign-in
+      router.push("/select-language"); // Redirect to language selection for new users
     } catch (error: any) {
       setFirebaseError(error.message || "Failed to sign in with Google.");
     }
@@ -142,7 +142,7 @@ export default function SignUpPage() {
       console.log("handleFacebookSignIn: Attempting signInWithPopup...");
       await signInWithPopup(auth, provider);
       console.log("handleFacebookSignIn: signInWithPopup successful");
-      router.push("/dashboard"); // Redirect to dashboard after successful sign-in
+      router.push("/select-language"); // Redirect to language selection for new users
     } catch (error: any) {
       console.error("handleFacebookSignIn: Error during/after signInWithPopup:", error);
       setFirebaseError(error.message || "Failed to sign in with Facebook.");
@@ -209,7 +209,7 @@ export default function SignUpPage() {
     setIsOtpSubmitting(true);
     try {
       await confirmationResult.confirm(otp);
-      router.push("/dashboard"); // Redirect to dashboard after successful sign-in
+      router.push("/select-language"); // Redirect to language selection for new users
     } catch (error: any) {
       // Common errors: auth/invalid-verification-code, auth/code-expired
       if (error.code === 'auth/invalid-verification-code') {
