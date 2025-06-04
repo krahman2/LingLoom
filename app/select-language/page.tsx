@@ -61,12 +61,10 @@ const itemVariant = {
   }
 };
 
-const cardHover = {
-  hover: { 
-    scale: 1.03,
-    y: -8,
-    transition: { duration: 0.3, ease: "easeOut" }
-  }
+const cardHoverStyles = { 
+  scale: 1.03,
+  y: -8,
+  transition: { duration: 0.3, ease: "easeOut" }
 };
 
 export default function SelectLanguagePage() {
@@ -194,31 +192,97 @@ export default function SelectLanguagePage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
-          {languages.map((language) => (
-            <motion.div
-              key={language.id}
-              variants={itemVariant}
-              whileHover="hover"
-              className={`rounded-xl shadow-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 
-                          ${selectedLanguageId === language.id ? language.borderColor + ' border-4 scale-105 shadow-lg' : 'border-2 border-gray-700 hover:border-opacity-50'} 
-                          ${language.bgGradient}`}
-              onClick={() => handleLanguageSelect(language.id)}
-            >
-              <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <Image src={`/images/flags/${language.flag}`} alt={language.name} width={40} height={28} className="mr-3 rounded" />
-                  <div>
-                    <h3 className={`text-2xl font-semibold ${language.textColor}`}>{language.name} <span className="text-lg text-gray-400">({language.nativeName})</span></h3>
-                    <p className="text-sm text-gray-500">{language.speakers}</p>
+          {languages.map((language) => {
+            const isSelected = selectedLanguageId === language.id;
+            const baseCardClasses = [
+              'rounded-2xl', 'shadow-2xl', 'cursor-pointer', 'transition-all', 'duration-300',
+              'transform', 'hover:-translate-y-1',
+              language.bgGradient,
+              'overflow-hidden'
+            ];
+            const selectedStateClasses = isSelected
+              ? [
+                  language.borderColor,
+                  'border-4',
+                  'scale-105',
+                  'ring-4',
+                  'ring-opacity-50',
+                  language.borderColor.replace('border-', 'ring-')
+                ]
+              : ['border-2', 'border-gray-700', 'hover:border-opacity-75'];
+
+            const cardClasses = [...baseCardClasses, ...selectedStateClasses].join(' ');
+
+            return (
+              <motion.div
+                key={language.id}
+                variants={itemVariant}
+                whileHover={{ scale: 1.03, y: -8 }}
+                className={cardClasses}
+                onClick={() => handleLanguageSelect(language.id)}
+              >
+                <div className="p-6 text-gray-800">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <Image src={`/images/flags/${language.flag}`} alt={language.name} width={48} height={32} className="mr-4 rounded-md shadow-sm" />
+                      <div>
+                        <h3 className={`text-2xl font-bold ${language.textColor}`}>{language.name}</h3>
+                        <p className={`text-lg ${language.textColor} opacity-80`}>{language.nativeName}</p>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <Check className="h-8 w-8 text-white bg-green-500 rounded-full p-1.5 shadow-lg" />
+                    )}
                   </div>
-                  {selectedLanguageId === language.id && (
-                    <Check className="ml-auto h-7 w-7 text-green-500 bg-white rounded-full p-1 shadow-md" />
-                  )}
+
+                  <p className="text-sm text-gray-700 mb-4 min-h-[3em]">{language.description}</p>
+
+                  <div className="space-y-2 mb-4 text-xs text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Users className={`w-4 h-4 ${language.textColor} opacity-75`} />
+                      <span>{language.speakers}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className={`w-4 h-4 ${language.textColor} opacity-75`} />
+                      <span>{language.difficulty}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Star className={`w-4 h-4 ${language.textColor} opacity-75`} />
+                      <span>Family: {language.family}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 italic mb-4 min-h-[2.5em]">{language.culturalNote}</p>
+
+                  <div className="border-t border-gray-300 pt-4">
+                    <h4 className={`text-sm font-semibold mb-2 ${language.textColor}`}>Course Features:</h4>
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-700">
+                      <div>
+                        <span role="img" aria-label="books" className="text-xl">📚</span>
+                        <p>Interactive Lessons</p>
+                      </div>
+                      <div>
+                        <span role="img" aria-label="theater masks" className="text-xl">🎭</span>
+                        <p>Cultural Content</p>
+                      </div>
+                      <div>
+                        <span role="img" aria-label="speech bubble" className="text-xl">🗣️</span>
+                        <p>Real Conversations</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={`
+                    mt-6 w-full h-1.5 rounded-full transition-all duration-300
+                    ${isSelected 
+                      ? `bg-gradient-to-r ${language.color}` 
+                      : 'bg-gray-300'
+                    }
+                  `} />
                 </div>
-                <p className="text-gray-600 mb-3 text-sm">{language.description}</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         <motion.div variants={itemVariant} className="text-center">

@@ -90,7 +90,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <header className="mb-8 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
-        <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
+        <Button onClick={handleSignOut} variant="destructive" className="bg-red-600 hover:bg-red-700 text-white">
+          Sign Out
+        </Button>
       </header>
 
       <section className="mb-8 p-6 bg-gray-800 rounded-lg shadow-xl">
