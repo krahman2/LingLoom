@@ -10,6 +10,9 @@ import {
   doc,
   DocumentReference,
   Firestore,
+  arrayUnion,
+  updateDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 
 // Log to confirm the env var is loaded

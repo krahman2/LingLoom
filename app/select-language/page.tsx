@@ -111,7 +111,13 @@ export default function SelectLanguagePage() {
         return;
       }
 
-      const newLanguageEntry = {
+      const newLanguageEntryForUpdate = {
+        langCode: languageToAdd.id,
+        langName: languageToAdd.name,
+        addedAt: new Date(),
+      };
+
+      const newLanguageEntryForSet = {
         langCode: languageToAdd.id,
         langName: languageToAdd.name,
         addedAt: serverTimestamp(),
@@ -122,27 +128,24 @@ export default function SelectLanguagePage() {
       if (userDocSnap.exists()) {
         const currentData = userDocSnap.data();
         const languagesArray = currentData.userLanguages || [];
-        const languageAlreadyAdded = languagesArray.some((lang: any) => lang.langCode === newLanguageEntry.langCode);
+        const languageAlreadyAdded = languagesArray.some((lang: any) => lang.langCode === newLanguageEntryForUpdate.langCode);
 
         if (!languageAlreadyAdded) {
           await updateDoc(userDocRef, {
-            userLanguages: arrayUnion(newLanguageEntry),
-            activeLanguage: newLanguageEntry.langCode,
-            email: authUser.email, 
-            displayName: authUser.displayName,
-            uid: authUser.uid
+            userLanguages: arrayUnion(newLanguageEntryForUpdate),
+            activeLanguage: newLanguageEntryForUpdate.langCode,
           });
           console.log("Language added to existing user.");
         } else {
           await updateDoc(userDocRef, {
-            activeLanguage: newLanguageEntry.langCode,
+            activeLanguage: newLanguageEntryForUpdate.langCode,
           });
           console.log("Language already added, set as active.");
         }
       } else {
         await setDoc(userDocRef, {
-          userLanguages: [newLanguageEntry],
-          activeLanguage: newLanguageEntry.langCode,
+          userLanguages: [newLanguageEntryForSet],
+          activeLanguage: newLanguageEntryForSet.langCode,
           email: authUser.email,
           displayName: authUser.displayName,
           uid: authUser.uid,
