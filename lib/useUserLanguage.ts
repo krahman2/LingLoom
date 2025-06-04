@@ -4,52 +4,67 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { useRouter } from 'next/navigation';
 
-interface UserLanguageData {
-  selectedLanguage?: string;
-  languageSelectedAt?: any;
+// Interface for a single language object in the userLanguages array
+interface UserLanguage {
+  langCode: string;
+  langName: string; // Or any other metadata you want to store per language
+  addedAt: any; // Consider using Firestore Timestamp type here if possible
+}
+
+// Interface for the user's language data stored in Firestore
+interface UserLanguagesData {
+  activeLanguage?: string;
+  userLanguages?: UserLanguage[];
 }
 
 export function useUserLanguage() {
-  const [user, loading] = useAuthState(auth);
-  const [hasSelectedLanguage, setHasSelectedLanguage] = useState<boolean | null>(null);
-  const [languageData, setLanguageData] = useState<UserLanguageData | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [user, authLoading] = useAuthState(auth); // Renamed loading to authLoading for clarity
+  const [activeLanguage, setActiveLanguage] = useState<string | null>(null);
+  const [userLanguages, setUserLanguages] = useState<UserLanguage[]>([]);
+  // 'checking' state remains to indicate if we are currently fetching language data
+  const [checkingData, setCheckingData] = useState(true); 
   const router = useRouter();
 
-  const checkUserLanguage = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setChecking(true);
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as UserLanguageData;
-        setLanguageData(userData);
-        setHasSelectedLanguage(!!userData.selectedLanguage);
-      } else {
-        setHasSelectedLanguage(false);
-        setLanguageData(null);
-      }
-    } catch (error) {
-      console.error('Error checking user language:', error);
-      setHasSelectedLanguage(false);
-    } finally {
-      setChecking(false);
-    }
-  }, [user, setChecking, setLanguageData, setHasSelectedLanguage]);
-
-  useEffect(() => {
-    if (loading) return;
-    
+  const checkUserLanguageData = useCallback(async () => {
     if (!user) {
-      setChecking(false);
-      setHasSelectedLanguage(null);
+      // If no user, reset language states and stop checking
+      setActiveLanguage(null);
+      setUserLanguages([]);
+      setCheckingData(false);
       return;
     }
 
-    checkUserLanguage();
-  }, [user, loading, checkUserLanguage]);
+    setCheckingData(true);
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as UserLanguagesData;
+        setActiveLanguage(userData.activeLanguage || null);
+        setUserLanguages(userData.userLanguages || []);
+      } else {
+        // User document doesn't exist, means no languages selected/added yet
+        setActiveLanguage(null);
+        setUserLanguages([]);
+      }
+    } catch (error) {
+      console.error('Error checking user language data:', error);
+      setActiveLanguage(null);
+      setUserLanguages([]);
+    } finally {
+      setCheckingData(false);
+    }
+  }, [user]); // Dependencies: user. Other setters are stable.
+
+  useEffect(() => {
+    if (authLoading) {
+      setCheckingData(true); // Keep checkingData true while auth is loading
+      return;
+    }
+    // When authLoading is false, proceed to check language data
+    checkUserLanguageData();
+  }, [user, authLoading, checkUserLanguageData]);
 
   const redirectToLanguageSelection = () => {
     router.push('/select-language');
@@ -61,11 +76,13 @@ export function useUserLanguage() {
 
   return {
     user,
-    loading: loading || checking,
-    hasSelectedLanguage,
-    languageData,
+    loading: authLoading || checkingData, // Overall loading state
+    activeLanguage,
+    userLanguages,
+    hasActiveLanguage: !!activeLanguage, // Helper boolean
+    hasAddedLanguages: userLanguages.length > 0, // Helper boolean
     redirectToLanguageSelection,
     redirectToDashboard,
-    refetch: checkUserLanguage
+    refetchLanguageData: checkUserLanguageData, // Renamed for clarity
   };
 } 
