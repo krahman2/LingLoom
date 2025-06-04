@@ -17,3 +17,5 @@ dist/
 # macOS / Windows cruft
 .DS_Store
 Thumbs.db
+
+package-lock.json
