@@ -57,19 +57,21 @@ const panelVariant = {
 const buttonHover = { hover: { scale: 1.05 } };
 
 // Zod schema
-const signUpSchema = z
-  .object({
-    name: z.string().min(1, "Full name is required"),
-    username: z.string().min(1, "Username is required"),
-    email: z.string().email(),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(8),
-    terms: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms of Service and Privacy Policy." }) }),
-  })
-  .refine((data: SignUpForm) => data.password === data.confirmPassword, {
+const baseSignUpSchema = z.object({
+  name: z.string().min(1, "Full name is required"),
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8),
+  terms: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms of Service and Privacy Policy." }) }),
+});
+
+const signUpSchema = baseSignUpSchema
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
 type SignUpForm = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {

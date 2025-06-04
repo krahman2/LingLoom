@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -16,19 +16,7 @@ export function useUserLanguage() {
   const [checking, setChecking] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    if (loading) return;
-    
-    if (!user) {
-      setChecking(false);
-      setHasSelectedLanguage(null);
-      return;
-    }
-
-    checkUserLanguage();
-  }, [user, loading]);
-
-  const checkUserLanguage = async () => {
+  const checkUserLanguage = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -49,7 +37,19 @@ export function useUserLanguage() {
     } finally {
       setChecking(false);
     }
-  };
+  }, [user, setChecking, setLanguageData, setHasSelectedLanguage]);
+
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!user) {
+      setChecking(false);
+      setHasSelectedLanguage(null);
+      return;
+    }
+
+    checkUserLanguage();
+  }, [user, loading, checkUserLanguage]);
 
   const redirectToLanguageSelection = () => {
     router.push('/select-language');
