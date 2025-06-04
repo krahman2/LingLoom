@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/ui/Header';
+import NavigationBar from '@/components/ui/NavigationBar';
 import Footer from '@/components/ui/Footer';
 import { Globe, Heart, Users, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -43,7 +43,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <Header />
+      <NavigationBar />
       <main className="flex-grow">
         
         {/* Hero Section */}

@@ -2,12 +2,23 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useUserLanguage } from '@/lib/useUserLanguage';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, LogOut, PlusCircle, BarChartHorizontalBig, BookCopy } from 'lucide-react';
+import StatsDashboard from '@/components/ui/StatsDashboard';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,13 +35,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        console.log("[Dashboard] No authenticated user, redirecting to login");
         router.push('/login');
       } else if (!hasActiveLanguage && (!userLanguages || userLanguages.length === 0)) {
-        console.log("[Dashboard] User authenticated but no active/added languages, redirecting to select-language");
         redirectToLanguageSelection();
       } else if (!hasActiveLanguage && userLanguages && userLanguages.length > 0) {
-        console.log("[Dashboard] User has languages but no active one, redirecting to select-language");
         redirectToLanguageSelection();
       }
     }
@@ -46,15 +54,13 @@ export default function DashboardPage() {
   };
 
   const handleSwitchActiveLanguage = async (newLangCode: string) => {
-    if (!user || !newLangCode) return;
-    console.log(`[Dashboard] Attempting to switch active language to: ${newLangCode}`);
+    if (!user || !newLangCode || newLangCode === activeLanguage) return;
     try {
       const userDocRef = doc(db, "users", user.uid);
       await updateDoc(userDocRef, {
         activeLanguage: newLangCode
       });
       await refetchLanguageData();
-      console.log(`[Dashboard] Active language switched to: ${newLangCode}`);
     } catch (error) {
       console.error("Error switching active language: ", error);
       alert("Failed to switch language. Please try again.");
@@ -70,73 +76,122 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) {
+  if (!user || !hasActiveLanguage || !userLanguages || userLanguages.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <p>Redirecting to login...</p>
+        <p>Loading user data or redirecting...</p>
       </div>
     );
   }
-  
-  if (!hasActiveLanguage || !userLanguages || userLanguages.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <p>No language selected. Redirecting...</p>
-      </div>
-    );
-  }
+
+  const activeLangDetails = userLanguages.find(lang => lang.langCode === activeLanguage);
+  const currentLangName = activeLangDetails?.langName || activeLanguage || "Select Language";
+  const currentLangFlag = activeLangDetails?.flag || 'default-flag.png';
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <header className="mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
-        <Button onClick={handleSignOut} variant="destructive" className="bg-red-600 hover:bg-red-700 text-white">
-          Sign Out
-        </Button>
+    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+          <Link href="/" className="flex items-center">
+            <Image src="/images/logo.png" alt="LingLoom Logo" width={120} height={32} priority />
+          </Link>
+          <div className="flex items-center gap-3 md:gap-4">
+            {userLanguages && userLanguages.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-2 border-gray-700 hover:bg-gray-800 text-gray-100 hover:text-white pr-2"
+                  >
+                    {currentLangFlag && currentLangFlag !== 'default-flag.png' && (
+                      <Image
+                        src={`/images/Flags/${currentLangFlag}`}
+                        alt={`${currentLangName} flag`}
+                        width={20}
+                        height={15}
+                        className="h-4 w-5 object-contain rounded-sm"
+                      />
+                    )}
+                    {(currentLangFlag === 'default-flag.png' || !currentLangFlag) && (
+                      <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
+                    )}
+                    <span className="hidden sm:inline">{currentLangName}</span>
+                    <ChevronDown className="h-4 w-4 opacity-80" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white w-56">
+                  <DropdownMenuLabel className="text-gray-400 px-2 py-1.5">Switch Language</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  {userLanguages.map((lang) => (
+                    <DropdownMenuItem 
+                      key={lang.langCode} 
+                      onClick={() => handleSwitchActiveLanguage(lang.langCode)}
+                      disabled={lang.langCode === activeLanguage}
+                      className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed flex items-center gap-2 px-2 py-1.5"
+                    >
+                      {lang.flag && lang.flag !== 'default-flag.png' && (
+                        <Image
+                          src={`/images/Flags/${lang.flag}`}
+                          alt={`${lang.langName} flag`}
+                          width={20}
+                          height={15}
+                          className="h-4 w-5 object-contain rounded-sm"
+                        />
+                      )}
+                      {(!lang.flag || lang.flag === 'default-flag.png') && (
+                        <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
+                      )}
+                      {lang.langName}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem 
+                    onClick={() => router.push('/select-language')} 
+                    className="hover:bg-gray-700 focus:bg-gray-700 flex items-center gap-2 px-2 py-1.5"
+                  >
+                    <PlusCircle className="mr-1 h-4 w-4" />
+                    Add/Manage Languages
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-gray-800">
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
       </header>
 
-      <section className="mb-8 p-6 bg-gray-800 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-semibold mb-4">Welcome, {user.displayName || 'User'}!</h2>
-        {activeLanguage && (
-          <p className="text-lg">Your current active language is: <span className="font-bold text-accent">{userLanguages.find(lang => lang.langCode === activeLanguage)?.langName || activeLanguage}</span></p>
-        )}
-      </section>
+      <main className="w-full px-4 md:px-6 lg:px-8 py-6 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 h-full">
+          <section className="p-6 bg-gray-800 rounded-lg shadow-xl h-full flex flex-col">
+            <div className="flex items-center mb-4">
+                <BookCopy className="w-6 h-6 text-accent mr-3" />
+                <h2 className="text-xl font-semibold">Learning Content: <span className="text-accent">{currentLangName}</span></h2>
+            </div>
+            <p className="text-gray-400 mb-4 flex-grow">
+                Your lessons, activities, and interactive modules for {currentLangName} will appear here.
+                This section will host the language tree and actual learning material.
+            </p>
+            <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
+                Start Learning Session
+            </Button>
+          </section>
+        </div>
 
-      <section className="mb-8 p-6 bg-gray-800 rounded-lg shadow-xl">
-        <h3 className="text-xl font-semibold mb-4">Your Languages:</h3>
-        {userLanguages && userLanguages.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {userLanguages.map((lang) => (
-              <Button
-                key={lang.langCode}
-                variant={lang.langCode === activeLanguage ? "default" : "secondary"}
-                onClick={() => handleSwitchActiveLanguage(lang.langCode)}
-                className="w-full justify-start text-left p-4 h-auto"
-              >
-                <div className="flex flex-col">
-                    <span className="font-semibold text-lg">{lang.langName}</span>
-                    <span className="text-xs text-gray-400">Code: {lang.langCode} | Added: {new Date(lang.addedAt?.toDate()).toLocaleDateString()}</span>
-                    <span className="text-xs mt-1 italic text-primary/80">Progress: N/A</span>
-                </div>
-              </Button>
-            ))}
-          </div>
-        ) : (
-          <p>You haven't added any languages yet.</p>
-        )}
-        <Link href="/select-language">
-          <Button variant="outline" className="mt-4 border-primary text-primary hover:bg-primary/10">
-            Add New Language / Change Active Language
-          </Button>
-        </Link>
-      </section>
-      
-      {activeLanguage && (
-        <section className="p-6 bg-gray-800 rounded-lg shadow-xl">
-          <h3 className="text-xl font-semibold mb-2">Learning Content for <span className="text-accent">{userLanguages.find(lang => lang.langCode === activeLanguage)?.langName || activeLanguage}</span></h3>
-          <p>Your lessons and activities for {userLanguages.find(lang => lang.langCode === activeLanguage)?.langName || activeLanguage} will appear here.</p>
-        </section>
-      )}
+        <div className="lg:col-span-2 h-full flex flex-col">
+            <div className="mb-4 flex justify-end">
+                <Link href="/stats-dashboard-preview" passHref>
+                    <Button variant="ghost" size="sm" className="text-primary hover:text-accent">
+                        View Full Stats Page <BarChartHorizontalBig className="ml-2 h-4 w-4" />
+                    </Button>
+                </Link>
+            </div>
+            <div className="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-xl flex-grow overflow-y-auto">
+              <StatsDashboard />
+            </div>
+        </div>
+      </main>
     </div>
   );
 } 

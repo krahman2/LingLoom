@@ -9,6 +9,7 @@ interface UserLanguage {
   langCode: string;
   langName: string; // Or any other metadata you want to store per language
   addedAt: any; // Consider using Firestore Timestamp type here if possible
+  flag?: string; // Added flag property
 }
 
 // Interface for the user's language data stored in Firestore
