@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+// Removed useState as it's no longer needed for an internal carousel
 import LearningMetricsSection from './stats/LearningMetricsSection';
 import TimeBasedStatsSection from './stats/TimeBasedStatsSection';
 import ConsistencyReviewSection from './stats/ConsistencyReviewSection';
 import GamificationAchievementsSection from './stats/GamificationAchievementsSection';
 import PersonalInsightsSection from './stats/PersonalInsightsSection';
+import { cn } from "@/lib/utils"; // Assuming you use shadcn's cn utility
 
 // Placeholder data for demonstration
 const placeholderStats = {
@@ -54,34 +55,35 @@ const placeholderStats = {
 };
 
 export default function StatsDashboard() {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const sections = [
-    { Component: GamificationAchievementsSection, props: { stats: placeholderStats.gamification }, name: "Gamification" },
-    { Component: PersonalInsightsSection, props: { stats: placeholderStats.personalInsights }, name: "Personal Insights" },
-    { Component: LearningMetricsSection, props: { stats: placeholderStats.learningMetrics }, name: "Learning Metrics" },
-    { Component: TimeBasedStatsSection, props: { stats: placeholderStats.timeBasedStats }, name: "Time-Based Stats" },
-    { Component: ConsistencyReviewSection, props: { stats: placeholderStats.consistencyReview }, name: "Consistency & Review" },
-  ];
-
-  const ActiveSection = sections[activeIndex].Component;
+  // Removed activeIndex, sections array, and ActiveSection logic
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <div className="w-full mb-6 min-h-[400px] flex items-center justify-center">
-        {/* This div will ensure that there's some space even if a section is small, and centers the content */}
-        <ActiveSection {...sections[activeIndex].props} />
-      </div>
-      <div className="flex space-x-2">
-        {sections.map((section, index) => (
-          <button
-            key={section.name}
-            onClick={() => setActiveIndex(index)}
-            aria-label={`Go to ${section.name} section`}
-            className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-primary transition-colors
-              ${activeIndex === index ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
-          />
-        ))}
+    <div className="w-full">
+      {/* <h2 className="text-3xl font-bold text-center mb-8 text-white">Your Progress Dashboard</h2> */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="flex flex-col gap-6">
+          <div className="flex-1 flex items-start justify-center">
+            <LearningMetricsSection stats={placeholderStats.learningMetrics} />
+          </div>
+          <div className="flex-1 flex items-start justify-center">
+            <TimeBasedStatsSection stats={placeholderStats.timeBasedStats} />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <div className="flex-1 flex items-start justify-center">
+            <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
+          </div>
+          <div className="flex-1 flex items-start justify-center">
+            <GamificationAchievementsSection stats={placeholderStats.gamification} />
+          </div>
+        </div>
+
+        <div className="lg:col-span-1 flex flex-col">
+          <div className="flex-1 flex items-start justify-center">
+            <PersonalInsightsSection stats={placeholderStats.personalInsights} />
+          </div>
+        </div>
       </div>
     </div>
   );

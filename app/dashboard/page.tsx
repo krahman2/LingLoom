@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { auth, db } from '@/lib/firebase';
@@ -9,6 +9,14 @@ import { doc, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useUserLanguage } from '@/lib/useUserLanguage';
 import { Button } from '@/components/ui/button';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +30,10 @@ import StatsDashboard from '@/components/ui/StatsDashboard';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
   const {
     user,
     loading,
@@ -43,6 +55,19 @@ export default function DashboardPage() {
       }
     }
   }, [user, loading, hasActiveLanguage, userLanguages, router, redirectToLanguageSelection]);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
 
   const handleSignOut = async () => {
     try {
@@ -162,34 +187,45 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="w-full px-4 md:px-6 lg:px-8 py-6 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 h-full">
-          <section className="p-6 bg-gray-800 rounded-lg shadow-xl h-full flex flex-col">
-            <div className="flex items-center mb-4">
-                <BookCopy className="w-6 h-6 text-accent mr-3" />
-                <h2 className="text-xl font-semibold">Learning Content: <span className="text-accent">{currentLangName}</span></h2>
-            </div>
-            <p className="text-gray-400 mb-4 flex-grow">
-                Your lessons, activities, and interactive modules for {currentLangName} will appear here.
-                This section will host the language tree and actual learning material.
-            </p>
-            <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
-                Start Learning Session
-            </Button>
-          </section>
-        </div>
+      <main className="w-full px-4 md:px-6 lg:px-8 pt-3 pb-6 flex-grow flex flex-col">
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-100">Your Progress Dashboard</h2>
 
-        <div className="lg:col-span-2 h-full flex flex-col">
-            <div className="mb-4 flex justify-end">
-                <Link href="/stats-dashboard-preview" passHref>
-                    <Button variant="ghost" size="sm" className="text-primary hover:text-accent">
-                        View Full Stats Page <BarChartHorizontalBig className="ml-2 h-4 w-4" />
-                    </Button>
-                </Link>
-            </div>
-            <div className="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-xl flex-grow overflow-y-auto">
-              <StatsDashboard />
-            </div>
+        <Carousel setApi={setApi} className="w-full flex-grow">
+          <CarouselContent className="h-full">
+            <CarouselItem className="h-full flex flex-col overflow-y-auto">
+              <div className="container mx-auto py-6 flex-grow flex items-center justify-center">
+                <div className="bg-gray-800 rounded-lg shadow-xl w-full p-6">
+                  <StatsDashboard />
+                </div>
+              </div>
+            </CarouselItem>
+            <CarouselItem className="h-full flex flex-col">
+              <section className="p-6 bg-gray-800 rounded-lg shadow-xl h-full flex flex-col flex-grow">
+                <div className="flex items-center mb-4">
+                  <BookCopy className="w-6 h-6 text-accent mr-3" />
+                  <h2 className="text-xl font-semibold">Learning Content: <span className="text-accent">{currentLangName}</span></h2>
+                </div>
+                <p className="text-gray-400 mb-4 flex-grow">
+                  Your lessons, activities, and interactive modules for {currentLangName} will appear here.
+                  This section will host the language tree and actual learning material.
+                </p>
+                <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
+                  Start Learning Session
+                </Button>
+              </section>
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+        <div className="flex justify-center space-x-2 mt-4 py-2">
+          {Array.from({ length: count }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => api?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary transition-colors
+                ${current === index + 1 ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
+            />
+          ))}
         </div>
       </main>
     </div>

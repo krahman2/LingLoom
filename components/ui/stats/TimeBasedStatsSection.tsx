@@ -18,10 +18,10 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col">
       <div className="flex items-center text-gray-400 mb-2">
-        <Icon className="w-5 h-5 mr-2" />
-        <h3 className="text-sm font-medium">{title}</h3>
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-xs font-medium">{title}</h3>
       </div>
-      <div className="text-2xl font-bold text-white">{children}</div>
+      <div className="text-xl font-bold text-white">{children}</div>
     </div>
   );
 };
@@ -30,11 +30,11 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ titl
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
       <div className="flex items-center text-gray-400 mb-2">
-        <PieChart className="w-5 h-5 mr-2" /> {/* Generic chart icon for placeholder */}
-        <h3 className="text-sm font-medium">{title}</h3>
+        <PieChart className="w-4 h-4 mr-2" />
+        <h3 className="text-xs font-medium">{title}</h3>
       </div>
       <div className="text-center text-gray-500 py-8">
-        <p>({chartType} Placeholder)</p>
+        <p className="text-sm">({chartType} Placeholder)</p>
         <p className="text-xs">Data for Vocabulary, Grammar, Listening, Speaking, Reading, Video watching</p>
       </div>
     </div>
@@ -43,12 +43,12 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ titl
 
 export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <div className="flex items-center mb-6">
-        <Clock className="w-7 h-7 text-blue-400 mr-3" />
-        <h2 className="text-2xl font-semibold text-white">Time-Based Stats</h2>
+        <Clock className="w-6 h-6 text-blue-400 mr-3" />
+        <h2 className="text-xl font-semibold text-white">Time-Based Stats</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard title="Streak (Consecutive Days)" icon={Zap}>
           {stats.streak} days
         </StatCard>
@@ -64,8 +64,10 @@ export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
             <p className="text-xs text-gray-500 mt-1 font-normal">({stats.avgDailyPracticeTimePeriod})</p>
           }
         </StatCard>
+        <div className="sm:col-span-2">
+          <ChartPlaceholder title="Time Breakdown" chartType="Pie Chart" />
+        </div>
       </div>
-      <ChartPlaceholder title="Time Breakdown" chartType="Pie Chart" />
     </div>
   );
 } 

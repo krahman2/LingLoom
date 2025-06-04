@@ -16,20 +16,20 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col">
       <div className="flex items-center text-gray-400 mb-2">
-        <Icon className="w-5 h-5 mr-2" />
-        <h3 className="text-sm font-medium">{title}</h3>
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-xs font-medium">{title}</h3>
       </div>
-      <div className="text-2xl font-bold text-white">{children}</div>
+      <div className="text-xl font-bold text-white">{children}</div>
     </div>
   );
 };
 
 export default function LearningMetricsSection({ stats }: LearningMetricsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <div className="flex items-center mb-6">
-        <Brain className="w-7 h-7 text-purple-400 mr-3" />
-        <h2 className="text-2xl font-semibold text-white">Learning Metrics</h2>
+        <Brain className="w-6 h-6 text-purple-400 mr-3" />
+        <h2 className="text-xl font-semibold text-white">Learning Metrics</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard title="Total Words Learned" icon={Hash}>
