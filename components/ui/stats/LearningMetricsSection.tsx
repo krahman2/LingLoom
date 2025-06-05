@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Brain, BookOpen, CheckSquare, Percent, Hash } from 'lucide-react';
 
 interface LearningMetricsProps {
@@ -12,21 +13,56 @@ interface LearningMetricsProps {
   };
 }
 
+const sectionVariants = {
+  initial: {
+    borderColor: "rgba(71, 85, 105, 0.5)",
+  },
+  hover: {
+    scale: 1.02,
+    borderColor: 'rgba(100, 116, 139, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
+const statCardVariants = {
+  initial: {
+    y: 0,
+    backgroundColor: "rgba(31, 41, 55, 0.5)",
+  },
+  hover: {
+    y: -4,
+    backgroundColor: 'rgba(55, 65, 81, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col">
+    <motion.div 
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col"
+      variants={statCardVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center text-gray-400 mb-1.5">
         <Icon className="w-3 h-3 mr-2" />
         <h3 className="text-xs font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white">{children}</div>
-    </div>
+    </motion.div>
   );
 };
 
 export default function LearningMetricsSection({ stats }: LearningMetricsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+    <motion.div 
+      className="bg-gray-900 border border-gray-700 rounded-xl p-3 w-full h-full"
+      variants={sectionVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center mb-4">
         <Brain className="w-5 h-5 text-purple-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Learning Metrics</h2>
@@ -46,6 +82,6 @@ export default function LearningMetricsSection({ stats }: LearningMetricsProps) 
           {stats.fluencyScore}%
         </StatCard>
       </div>
-    </div>
+    </motion.div>
   );
 } 

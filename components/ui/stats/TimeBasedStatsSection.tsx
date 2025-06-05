@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import React from 'react';
 import { Zap, Clock, Film, PieChart, CalendarClock } from 'lucide-react';
 
@@ -13,22 +14,58 @@ interface TimeBasedStatsProps {
   };
 }
 
-// Reusable StatCard (can be moved to a shared file later if used by many sections)
+const sectionVariants = {
+  initial: {
+    borderColor: "rgba(71, 85, 105, 0.5)",
+  },
+  hover: {
+    scale: 1.02,
+    borderColor: 'rgba(100, 116, 139, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
+const interactiveElementVariants = {
+  initial: {
+    y: 0,
+    backgroundColor: "rgba(31, 41, 55, 0.5)",
+  },
+  hover: {
+    y: -4,
+    backgroundColor: 'rgba(55, 65, 81, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
+// Updated StatCard to use motion
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col">
+    <motion.div 
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col"
+      variants={interactiveElementVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center text-gray-400 mb-1.5">
         <Icon className="w-3 h-3 mr-2" />
         <h3 className="text-xs font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white">{children}</div>
-    </div>
+    </motion.div>
   );
 };
 
+// Updated ChartPlaceholder to use motion
 const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ title, chartType }) => {
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+    <motion.div 
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
+      variants={interactiveElementVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center text-gray-400 mb-1.5">
         <PieChart className="w-3 h-3 mr-2" />
         <h3 className="text-xs font-medium">{title}</h3>
@@ -37,13 +74,19 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ titl
         <p className="text-xs">({chartType} Placeholder)</p>
         <p className="text-xs mt-1">Data for Vocabulary, Grammar, Listening, Speaking, Reading, Video watching</p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+    <motion.div 
+      className="bg-gray-900 border border-gray-800 rounded-xl p-3 w-full h-full"
+      variants={sectionVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center mb-4">
         <Clock className="w-5 h-5 text-blue-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Time-Based Stats</h2>
@@ -68,6 +111,6 @@ export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
           <ChartPlaceholder title="Time Breakdown" chartType="Pie Chart" />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 

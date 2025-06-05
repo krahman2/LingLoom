@@ -1,7 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import React from 'react';
-import { Award, Star, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Award, Star, ShieldCheck } from 'lucide-react';
 
 interface GamificationAchievementsProps {
   stats: {
@@ -12,23 +13,59 @@ interface GamificationAchievementsProps {
   };
 }
 
-// Reusable StatCard (can be moved to a shared file later)
+const sectionVariants = {
+  initial: {
+    borderColor: "rgba(71, 85, 105, 0.5)", 
+  },
+  hover: {
+    scale: 1.02,
+    borderColor: 'rgba(100, 116, 139, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
+const interactiveElementVariants = {
+  initial: {
+    y: 0,
+    backgroundColor: "rgba(31, 41, 55, 0.5)",
+  },
+  hover: {
+    y: -4, 
+    backgroundColor: 'rgba(55, 65, 81, 0.7)',
+    transition: { duration: 0.2, ease: "easeOut" },
+  }
+};
+
+// Updated StatCard
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col h-full">
+    <motion.div 
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col h-full"
+      variants={interactiveElementVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center text-gray-400 mb-1.5">
         <Icon className="w-3 h-3 mr-2" />
         <h3 className="text-xs font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white mt-auto">{children}</div>
-    </div>
+    </motion.div>
   );
 };
 
+// Updated ProgressBar
 const ProgressBar: React.FC<{ current: number; max: number; label: string }> = ({ current, max, label }) => {
   const percentage = max > 0 ? (current / max) * 100 : 0;
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+    <motion.div 
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
+      variants={interactiveElementVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
         <span>{label}</span>
         <span>{current} / {max} XP</span>
@@ -39,13 +76,19 @@ const ProgressBar: React.FC<{ current: number; max: number; label: string }> = (
           style={{ width: `${percentage}%` }}
         ></div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default function GamificationAchievementsSection({ stats }: GamificationAchievementsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+    <motion.div 
+      className="bg-gray-900 border border-gray-800 rounded-xl p-3 w-full h-full"
+      variants={sectionVariants}
+      initial="initial"
+      whileHover="hover"
+      whileTap="hover"
+    >
       <div className="flex items-center mb-4">
         <Award className="w-5 h-5 text-yellow-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Gamification & Achievements</h2>
@@ -60,7 +103,13 @@ export default function GamificationAchievementsSection({ stats }: GamificationA
             <ShieldCheck className="w-3 h-3 mr-1.5" />
             <h3 className="text-xs font-medium">Badges & Milestones</h3>
           </div>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
+          <motion.div 
+            className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
+            variants={interactiveElementVariants}
+            initial="initial"
+            whileHover="hover"
+            whileTap="hover"
+          >
             {stats.badges.length > 0 ? (
               <ul className="space-y-1.5">
                 {stats.badges.map((badge, index) => (
@@ -73,9 +122,9 @@ export default function GamificationAchievementsSection({ stats }: GamificationA
             ) : (
               <p className="text-xs text-gray-500">No badges earned yet.</p>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 

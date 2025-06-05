@@ -1,6 +1,6 @@
 'use client';
 
-// Removed useState as it's no longer needed for an internal carousel
+import { motion } from 'framer-motion'; // Added framer-motion
 import LearningMetricsSection from './stats/LearningMetricsSection';
 import TimeBasedStatsSection from './stats/TimeBasedStatsSection';
 import ConsistencyReviewSection from './stats/ConsistencyReviewSection';
@@ -54,6 +54,24 @@ const placeholderStats = {
   // Add more placeholder data as needed for other sections
 };
 
+const columnVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.2, // Stagger delay
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }),
+  hover: {
+    scale: 1.03,
+    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.25)", // Enhanced shadow for dark bg
+    transition: { duration: 0.3 }
+  }
+};
+
 export default function StatsDashboard() {
   // Removed activeIndex, sections array, and ActiveSection logic
 
@@ -61,29 +79,50 @@ export default function StatsDashboard() {
     <div className="w-full">
       {/* <h2 className="text-3xl font-bold text-center mb-8 text-white">Your Progress Dashboard</h2> */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
-        <div className="flex flex-col gap-6">
+        <motion.div
+          className="flex flex-col gap-6"
+          variants={columnVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          custom={0} // Index for stagger
+        >
           <div className="flex-1 flex items-start justify-center">
             <LearningMetricsSection stats={placeholderStats.learningMetrics} />
           </div>
           <div className="flex-1 flex items-start justify-center">
             <TimeBasedStatsSection stats={placeholderStats.timeBasedStats} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col gap-0">
+        <motion.div
+          className="flex flex-col gap-0" // Retain original gap for this column
+          variants={columnVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          custom={1} // Index for stagger
+        >
           <div className="flex-1 flex items-start justify-center">
             <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
           </div>
           <div className="flex-1 flex items-start justify-center">
             <GamificationAchievementsSection stats={placeholderStats.gamification} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="lg:col-span-1 flex flex-col">
+        <motion.div
+          className="lg:col-span-1 flex flex-col"
+          variants={columnVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          custom={2} // Index for stagger
+        >
           <div className="flex-1 flex items-start justify-center">
             <PersonalInsightsSection stats={placeholderStats.personalInsights} />
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

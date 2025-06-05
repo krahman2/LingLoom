@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { auth, db } from '@/lib/firebase';
@@ -25,8 +26,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LogOut, PlusCircle, BarChartHorizontalBig, BookCopy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, LogOut, PlusCircle, BookCopy, ChevronLeft, ChevronRight } from 'lucide-react';
 import StatsDashboard from '@/components/ui/StatsDashboard';
+
+const titleVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.2 } }
+};
+
+const controlsVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.4 } }
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -94,7 +105,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         <p className="ml-3">Loading Dashboard...</p>
       </div>
@@ -103,7 +114,7 @@ export default function DashboardPage() {
 
   if (!user || !hasActiveLanguage || !userLanguages || userLanguages.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <p>Loading user data or redirecting...</p>
       </div>
     );
@@ -112,12 +123,9 @@ export default function DashboardPage() {
   const activeLangDetails = userLanguages.find(lang => lang.langCode === activeLanguage);
   const currentLangName = activeLangDetails?.langName || activeLanguage || "Select Language";
 
-  // Temporary workaround: Map langCode to flag filename
   const langCodeToFlagMap: { [key: string]: string } = {
-    'bengali': 'bangladesh.png', // Assuming 'bengali' is the langCode for Bangla
-    'hindi': 'india.png',     // Assuming 'hindi' is the langCode for Hindi
-    // Add other language codes and their corresponding flag images here
-    // e.g. 'marathi': 'india.png', (if you distinguish by langCode)
+    'bengali': 'bangladesh.png',
+    'hindi': 'india.png',
   };
   
   const determinedCurrentLangFlag = activeLangDetails 
@@ -202,7 +210,12 @@ export default function DashboardPage() {
       </header>
 
       <main className="w-full px-4 md:px-6 lg:px-8 pt-2 pb-6 flex-grow flex flex-col">
-        <div className="flex justify-center items-center space-x-3 mb-2 py-1">
+        <motion.div 
+          className="flex justify-center items-center space-x-3 mb-2 py-1"
+          variants={controlsVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <Button
             variant="outline"
             size="icon"
@@ -236,9 +249,16 @@ export default function DashboardPage() {
             <ChevronRight className="h-3 w-3" />
             <span className="sr-only">Next slide</span>
           </Button>
-        </div>
+        </motion.div>
 
-        <h2 className="text-3xl font-bold text-center mb-3 text-gray-100">Your Progress Dashboard</h2>
+        <motion.h2 
+          className="text-3xl font-bold text-center mb-3 text-gray-100"
+          variants={titleVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          Your Progress Dashboard
+        </motion.h2>
 
         <Carousel setApi={setApi} className="w-full flex-grow relative">
           <CarouselContent className="h-full">
