@@ -134,6 +134,17 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white relative">
+      <div className="absolute inset-0 w-full h-full z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          src="/animatedwallpapers/page8.mp4"
+        />
+        <div className="absolute inset-0 w-full h-full bg-black/50 z-1" />
+      </div>
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
         <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
           <Link href="/" className="flex items-center">

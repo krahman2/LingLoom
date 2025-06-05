@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,383 +8,364 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-
-import { auth, db } from "@/lib/firebase";
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  FacebookAuthProvider,
-  // OAuthProvider, // Not used for Apple on login
-  RecaptchaVerifier,
-  ConfirmationResult,
-  signInWithPhoneNumber,
-} from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF, FaPhoneAlt } from "react-icons/fa";
 
-// Animation variants (same as signup)
-const container = { hidden: {}, visible: { transition: { staggerChildren: 0.2 } } };
-const panelVariant = {
-  hidden: (dir: "left" | "right") => ({ opacity: 0, x: dir === "left" ? -50 : 50 }),
-  visible: { opacity: 1, x: 0, transition: { duration: 1.2 } },
-};
-const buttonHover = { hover: { scale: 1.05 } };
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  onAuthStateChanged,
+  User,
+  ConfirmationResult,
+} from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-// Zod schema for login
+// Animation variants
+const container = { hidden: {}, visible: { transition: { staggerChildren: 0.3 } } };
+const welcomeTextVariant = {
+  hidden: { opacity: 0, y: -30, scale: 0.9 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.2, ease: "circOut" } },
+};
+const formPanelVariant = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.9, ease: "circOut", staggerChildren: 0.15 } }, 
+};
+const formItemVariant = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
-type LoginForm = z.infer<typeof loginSchema>;
+
+type LoginSchema = z.infer<typeof loginSchema>;
+
+declare global {
+  interface Window {
+    recaptchaVerifierLogin?: RecaptchaVerifier;
+    confirmationResult?: ConfirmationResult; 
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
-
-  // State for phone authentication
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [confirmationResultState, setConfirmationResultState] = useState<ConfirmationResult | null>(null);
   const [isOtpSubmitting, setIsOtpSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>({
+    formState: { errors },
+    setError,
+  } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
-    mode: "onChange",
   });
 
-  // Helper function to check language selection and redirect accordingly
-  const handleSuccessfulLogin = async (user: any) => {
-    try {
-      // Check if user has email verification issues first
-      if (user && user.email && !user.emailVerified) {
-        router.push("/verify-email");
-        return;
-      }
+  const setupRecaptcha = () => {
+    if (!auth || typeof window === 'undefined') return;
+    if (window.recaptchaVerifierLogin && document.getElementById("recaptcha-container-login")?.innerHTML === "") {
+        window.recaptchaVerifierLogin.clear();
+        window.recaptchaVerifierLogin = undefined;
+    }
+    if (document.getElementById("recaptcha-container-login") && !window.recaptchaVerifierLogin) {
+        try {
+            window.recaptchaVerifierLogin = new RecaptchaVerifier(auth, "recaptcha-container-login", {
+                size: "invisible",
+                callback: (response: any) => { /* reCAPTCHA solved */ },
+                "expired-callback": () => {
+                    if (window.recaptchaVerifierLogin) {
+                        window.recaptchaVerifierLogin.clear();
+                        window.recaptchaVerifierLogin = undefined;
+                    }
+                    setupRecaptcha(); 
+                },
+            });
+            window.recaptchaVerifierLogin.render().catch(err => {});
+        } catch (error) {}
+    }
+};
 
-      // Check if user has selected a language
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data()?.selectedLanguage) {
-        // User has selected a language, go to dashboard
-        router.push("/dashboard");
-      } else {
-        // User hasn't selected a language, go to language selection
-        router.push("/select-language");
+  const handleSocialLogin = async (provider: GoogleAuthProvider | FacebookAuthProvider) => {
+    setIsSubmitting(true);
+    setFirebaseError(null);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      if (!userDocSnap.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          providerId: user.providerData[0]?.providerId,
+          createdAt: new Date().toISOString(),
+        });
       }
-    } catch (error) {
-      console.error("Error checking user language:", error);
-      // Fallback to dashboard
       router.push("/dashboard");
-    }
-  };
-
-  // Email/Password Login Handler
-  const onSubmitEmailPassword = async (data: LoginForm) => {
-    setFirebaseError(null);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      await handleSuccessfulLogin(userCredential.user);
-    } catch (err: any) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
-        setFirebaseError("No user found with this email.");
-      } else if (err.code === 'auth/wrong-password') {
-        setFirebaseError("Incorrect password. Please try again.");
-      } else if (err.code === 'auth/invalid-credential') {
-        setFirebaseError("Invalid credentials. Please check your email and password.");
-      }
-      else {
-        setFirebaseError(err.message || "Failed to log in. Please try again.");
-      }
-    }
-  };
-
-  // Google Sign-In Handler (reusable)
-  const handleGoogleSignIn = async () => {
-    setFirebaseError(null);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      await handleSuccessfulLogin(result.user);
     } catch (error: any) {
-      setFirebaseError(error.message || "Failed to sign in with Google.");
+      setFirebaseError(error.message || "Failed to login. Please try again.");
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        setFirebaseError("An account already exists with the same email. Try another sign-in method.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Facebook Sign-In Handler (reusable)
-  const handleFacebookSignIn = async () => {
-    setFirebaseError(null);
-    const provider = new FacebookAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      await handleSuccessfulLogin(result.user);
-    } catch (error: any) {
-      setFirebaseError(error.message || "Failed to sign in with Facebook.");
-    }
-  };
+  const handleGoogleSignIn = () => handleSocialLogin(new GoogleAuthProvider());
+  const handleFacebookSignIn = () => handleSocialLogin(new FacebookAuthProvider());
 
-  // Phone Sign-In Handlers (reusable from signup)
-  const handlePhoneSignIn = async () => {
-    setFirebaseError(null);
+  const handlePhoneSignIn = () => {
     setShowPhoneInput(true);
     setShowOtpInput(false);
+    setFirebaseError(null);
+    setTimeout(() => setupRecaptcha(), 50); 
+  };
+
+  const onSubmitEmailPassword = async (data: LoginSchema) => {
+    setIsSubmitting(true);
+    setFirebaseError(null);
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password);
+      router.push("/dashboard");
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        setFirebaseError("Invalid email or password.");
+        setError("email", { type: "manual", message: " " });
+        setError("password", { type: "manual", message: " " });
+      } else {
+        setFirebaseError(error.message || "Failed to login.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSendOtp = async () => {
-    setFirebaseError(null);
+    if (!phoneNumber) {
+      setFirebaseError("Please enter a phone number.");
+      return;
+    }
+    if (!window.recaptchaVerifierLogin) {
+        setFirebaseError("reCAPTCHA not ready. Please wait or refresh.");
+        setupRecaptcha(); 
+        return;
+    }
     setIsOtpSubmitting(true);
+    setFirebaseError(null);
     try {
-      const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container-login', { // Ensure unique ID if on same page/SPA context
-        'size': 'invisible',
-        'callback': (response: any) => { console.log("reCAPTCHA solved for login, response:", response); },
-        'expired-callback': () => { setFirebaseError("reCAPTCHA verification expired for login. Please try again."); }
-      });
-      const appVerifier = recaptchaVerifier;
-      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      setConfirmationResult(result);
+      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifierLogin);
+      setConfirmationResultState(confirmation);
       setShowPhoneInput(false);
       setShowOtpInput(true);
-      setFirebaseError(null);
     } catch (error: any) {
-      console.error("Error sending OTP for login:", error);
-      if (error.code === 'auth/captcha-check-failed' && error.message.includes('invisible')) {
-        setFirebaseError("reCAPTCHA check failed. Ensure the reCAPTCHA element is visible or correctly configured.");
-      } else if (error.code === 'auth/invalid-phone-number') {
-        setFirebaseError("Invalid phone number. Please use E.164 format (e.g., +1xxxxxxxxxx).");
-      } else {
-        setFirebaseError(error.message || "Failed to send OTP. Please try again.");
+      setFirebaseError(error.message || "Failed to send OTP.");
+      if (window.recaptchaVerifierLogin) {
+        window.recaptchaVerifierLogin.clear();
+        window.recaptchaVerifierLogin = undefined;
       }
-      const recaptchaContainer = document.getElementById('recaptcha-container-login');
-      if (recaptchaContainer) {
-        recaptchaContainer.innerHTML = '';
-      }
+      setupRecaptcha(); 
     } finally {
       setIsOtpSubmitting(false);
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (!confirmationResult) {
-      setFirebaseError("No confirmation result found. Please request OTP first.");
+    if (!otp) {
+      setFirebaseError("Please enter the OTP.");
       return;
     }
-    setFirebaseError(null);
+    if (!confirmationResultState) {
+        setFirebaseError("Could not verify OTP. Please try sending it again.");
+        return;
+    }
     setIsOtpSubmitting(true);
+    setFirebaseError(null);
     try {
-      const userCredential = await confirmationResult.confirm(otp);
-      await handleSuccessfulLogin(userCredential.user);
-    } catch (error: any) {
-      if (error.code === 'auth/invalid-verification-code') {
-        setFirebaseError("Invalid OTP. Please try again.");
-      } else {
-        setFirebaseError(error.message || "Failed to verify OTP.");
+      const result = await confirmationResultState.confirm(otp);
+      const user = result.user;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      if (!userDocSnap.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          phoneNumber: user.phoneNumber,
+          providerId: "phone",
+          createdAt: new Date().toISOString(),
+        });
       }
+      router.push("/dashboard");
+    } catch (error: any) {
+      setFirebaseError(error.message || "Failed to verify OTP.");
     } finally {
       setIsOtpSubmitting(false);
     }
   };
 
+  useEffect(() => {
+     return () => {
+        if (typeof window !== 'undefined' && window.recaptchaVerifierLogin) {
+            window.recaptchaVerifierLogin.clear();
+            window.recaptchaVerifierLogin = undefined;
+        }
+    };
+  }, []);
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 bg-black">
-      {/* Logo top-right */}
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-black overflow-hidden">
+      <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover z-0">
+        <source src="/animatedwallpapers/page1.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      <div className="absolute top-0 left-0 w-full h-full bg-black/30 z-1"></div>
+
       <Link href="/" className="absolute top-4 right-4 flex items-center gap-2 z-10">
         <Image src="/images/logo.png" alt="LingLoom" width={32} height={32} />
         <span className="text-xl md:text-2xl font-bold text-white">LingLoom</span>
       </Link>
 
-      {/* Panels */}
       <motion.div
-        className="flex flex-col md:flex-row items-center justify-center gap-8 w-full"
+        className="relative flex flex-col items-center justify-center w-full z-10 space-y-10 md:space-y-12"
         variants={container}
         initial="hidden"
         animate="visible"
       >
-        {/* Illustration (same as signup) */}
-        <motion.div
-          className="hidden md:block w-full max-w-lg rounded-2xl overflow-hidden"
-          custom="left"
-          variants={panelVariant}
+        <motion.h2
+          className="text-5xl md:text-6xl font-extrabold text-white text-center drop-shadow-lg"
+          variants={welcomeTextVariant}
         >
-          <div className="flex justify-center items-center h-full bg-white p-12">
-            <Image
-              src="/images/Untitled (1024 x 1024 px) (1)/16.gif"
-              alt="Login animation"
-              width={500}
-              height={500}
-              className="rounded-full"
-              unoptimized
-            />
-          </div>
-        </motion.div>
+          Welcome Back!
+        </motion.h2>
 
-        {/* Form */}
         <motion.div
-          className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full max-w-md"
-          custom="right"
-          variants={panelVariant}
+          className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md"
+          variants={formPanelVariant}
         >
-          <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">
-            Welcome Back!
-          </h2>
+          <motion.div className="flex flex-col gap-5"> 
+            {firebaseError && (
+              <motion.p className="text-red-600 text-center" variants={formItemVariant}>{firebaseError}</motion.p>
+            )}
 
-          {firebaseError && (
-            <p className="text-red-600 text-center mb-4">{firebaseError}</p>
-          )}
+            {!showPhoneInput && !showOtpInput && (
+              <>
+                <motion.div variants={formItemVariant}>
+                  <p className="text-sm text-center text-black mb-3">Sign in with</p>
+                  <div className="flex justify-center gap-3 mb-4">
+                    <Button onClick={handleGoogleSignIn} variant="outline" className="flex-1"><FcGoogle className="mr-2 h-5 w-5" /> Google</Button>
+                    <Button onClick={handleFacebookSignIn} variant="outline" className="flex-1"><FaFacebookF className="mr-2 h-5 w-5 text-[#1877F2]" /> Facebook</Button>
+                    <Button onClick={handlePhoneSignIn} variant="outline" className="flex-1"><FaPhoneAlt className="mr-2 h-4 w-4 text-gray-700" /> Phone</Button>
+                  </div>
+                  <div className="flex items-center my-4">
+                    <hr className="flex-grow border-gray-300" />
+                    <span className="mx-2 text-xs text-gray-400">OR</span>
+                    <hr className="flex-grow border-gray-300" />
+                  </div>
+                </motion.div>
+                
+                <form onSubmit={handleSubmit(onSubmitEmailPassword)} className="space-y-5">
+                  <motion.div variants={formItemVariant}>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" type="email" placeholder="you@example.com" {...register("email")} className={errors.email ? "border-red-500" : ""} />
+                    {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+                  </motion.div>
 
-          {/* Phone Input Modal/Section (reused, ensure unique recaptcha id if needed) */}
-          {showPhoneInput && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-              onClick={() => setShowPhoneInput(false)}
-            >
-              <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm text-foreground" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-lg font-semibold mb-3 text-center">Enter Phone Number</h3>
-                <p className="text-xs text-gray-500 mb-3 text-center">Include country code (e.g., +1).</p>
-                <div id="recaptcha-container-login" className="mb-3 flex justify-center"></div> {/* Unique ID */}
+                  <motion.div variants={formItemVariant} className="relative">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" type={showPassword ? "text" : "password"} placeholder="Your password" {...register("password")} className={errors.password ? "border-red-500" : ""}/>
+                    <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-3 flex items-center text-xs text-gray-500 focus:outline-none" style={{ top: errors.password ? '0.8rem' : '1.8rem' }}>
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                    {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
+                  </motion.div>
+                  
+                  <motion.div variants={formItemVariant} className="text-right">
+                      <Link href="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
+                  </motion.div>
+
+                  <motion.div variants={formItemVariant}>
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting || isOtpSubmitting}>
+                      {isSubmitting ? "Logging In..." : "Log In"}
+                    </Button>
+                  </motion.div>
+                </form>
+                <motion.p variants={formItemVariant} className="mt-4 text-center text-xs text-gray-500">
+                  Don't have an account? <Link href="/signup" className="text-primary hover:underline font-semibold">Sign Up</Link>
+                </motion.p>
+              </>
+            )}
+            
+            {showPhoneInput && (
+              <motion.div variants={formItemVariant} className="space-y-4">
+                <h3 className="text-lg font-semibold text-center text-gray-800">Enter Phone Number</h3>
+                <p className="text-xs text-gray-500 text-center">Include country code (e.g., +1).</p>
                 <Input
                   type="tel"
-                  placeholder="e.g., +12223334444"
+                  placeholder="e.g., +12345678900"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="mb-3"
+                  className={firebaseError && !phoneNumber ? "border-red-500" : ""}
                 />
-                <Button onClick={handleSendOtp} className="w-full" disabled={isOtpSubmitting || !phoneNumber.trim()}>
+                <div id="recaptcha-container-login" className="my-3 flex justify-center"></div>
+                <Button onClick={handleSendOtp} className="w-full" disabled={isOtpSubmitting || !phoneNumber.trim() || !!firebaseError?.includes("reCAPTCHA")}>
                   {isOtpSubmitting ? "Sending OTP..." : "Send OTP"}
                 </Button>
-                 <Button variant="ghost" onClick={() => setShowPhoneInput(false)} className="w-full mt-2">
+                <Button variant="ghost" onClick={() => { setShowPhoneInput(false); setFirebaseError(null); if (window.recaptchaVerifierLogin) { window.recaptchaVerifierLogin.clear(); window.recaptchaVerifierLogin = undefined; } }} className="w-full text-xs text-gray-600">
                   Cancel
                 </Button>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* OTP Input Modal/Section (reused) */}
-          {showOtpInput && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-              onClick={() => setShowOtpInput(false)}
-            >
-              <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm text-foreground" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-lg font-semibold mb-3 text-center">Enter OTP</h3>
-                <p className="text-xs text-gray-500 mb-3 text-center">Sent to {phoneNumber}.</p>
+            {showOtpInput && (
+              <motion.div variants={formItemVariant} className="space-y-4">
+                <h3 className="text-lg font-semibold text-center text-gray-800">Enter OTP</h3>
+                <p className="text-xs text-gray-500 text-center">Sent to {phoneNumber}.</p>
                 <Input
                   type="text"
-                  placeholder="Enter 6-digit OTP"
+                  placeholder="6-digit OTP"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="mb-3"
                   maxLength={6}
+                  className={firebaseError && !otp ? "border-red-500" : ""}
                 />
-                <Button onClick={handleVerifyOtp} className="w-full" disabled={isOtpSubmitting || otp.length !== 6}>
+                <Button onClick={handleVerifyOtp} className="w-full" disabled={isOtpSubmitting || otp.length < 6}>
                   {isOtpSubmitting ? "Verifying..." : "Verify OTP & Log In"}
                 </Button>
-                <Button variant="ghost" onClick={() => { setShowOtpInput(false); setShowPhoneInput(true); }} className="w-full mt-2">
+                <Button variant="ghost" onClick={() => { setShowOtpInput(false); setShowPhoneInput(true); setFirebaseError(null); setOtp(""); setTimeout(() => setupRecaptcha(), 50); }} className="w-full text-xs text-gray-600">
                   Change Phone Number
                 </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Social buttons */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[
-              { Icon: FcGoogle, label: "Google", handler: handleGoogleSignIn },
-              { Icon: FaFacebookF, label: "Facebook", handler: handleFacebookSignIn },
-              { Icon: FaPhoneAlt, label: "Phone", handler: handlePhoneSignIn },
-            ].map(({ Icon, label, handler }) => (
-              <motion.div key={label} whileHover="hover" variants={buttonHover}>
-                <Button
-                  variant="outline"
-                  size="default"
-                  className="w-full flex items-center justify-center gap-2 text-base py-3 rounded-full"
-                  onClick={handler}
-                >
-                  <Icon className="text-2xl" /> {label}
+                 <Button variant="link" onClick={() => { setShowOtpInput(false); setFirebaseError(null); setOtp(""); if (window.recaptchaVerifierLogin) { window.recaptchaVerifierLogin.clear(); window.recaptchaVerifierLogin = undefined; } }} className="w-full text-xs text-primary">
+                  Cancel & Return to Main Login
                 </Button>
               </motion.div>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center my-4">
-            <hr className="flex-grow border-gray-300" />
-            <span className="mx-2 text-gray-500 text-sm">or</span>
-            <hr className="flex-grow border-gray-300" />
-          </div>
-
-          {/* Login form */}
-          <form onSubmit={handleSubmit(onSubmitEmailPassword)} noValidate className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" {...register("email")} placeholder="you@example.com" />
-              {errors.email && (
-                <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="relative">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                {...register("password")}
-                placeholder="Your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-3 flex items-center text-xs text-gray-500"
-                style={{ top: 'auto', bottom: errors.password ? '2.5rem' : '0.5rem' }} // Adjust position if error message is present
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-              {errors.password && (
-                <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>
-              )}
-            </div>
-            
-            <div className="text-right text-xs">
-                <Link href="/forgot-password" className="text-primary hover:underline">
-                    Forgot password?
-                </Link>
-            </div>
-
-            <motion.div whileHover="hover" variants={buttonHover}>
-              <Button
-                type="submit"
-                className="w-full text-sm py-3"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Logging In..." : "Log In"}
-              </Button>
-            </motion.div>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-gray-700">
-            Don't have an account?{' '}
-            <Link href="/signup" className="font-medium text-primary hover:underline">
-              Sign Up
-            </Link>
-          </div>
-
+            )}
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>
