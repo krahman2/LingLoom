@@ -29,9 +29,9 @@ export default function LanguageBar() {
   return (
     <div className="bg-neutral-900 px-8 py-4 flex justify-center">
       <div className="flex flex-wrap items-center justify-center gap-8 text-base md:text-lg text-white">
-        {languages.map((lang) => (
+        {languages.map((lang, index) => (
           <span
-            key={lang.code}
+            key={`${lang.name}-${index}`}
             className={`flex items-center gap-3 ${
               !lang.available ? "text-gray-400 italic" : "font-semibold"
             }`}
