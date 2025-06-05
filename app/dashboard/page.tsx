@@ -125,7 +125,7 @@ export default function DashboardPage() {
     : 'default-flag.png';
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+    <div className="min-h-screen flex flex-col bg-black text-white">
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
         <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
           <Link href="/" className="flex items-center">
