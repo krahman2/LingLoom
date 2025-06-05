@@ -133,7 +133,7 @@ export default function DashboardPage() {
     : 'default-flag.png';
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-black text-white relative">
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
         <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
           <Link href="/" className="flex items-center">
@@ -209,7 +209,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="w-full px-4 md:px-6 lg:px-8 pt-2 pb-6 flex-grow flex flex-col">
+      <main className="w-full px-4 md:px-6 lg:px-8 pt-2 pb-6 flex-grow flex flex-col relative z-10">
         <motion.div 
           className="flex justify-center items-center space-x-3 mb-2 py-1"
           variants={controlsVariants}
@@ -280,7 +280,7 @@ export default function DashboardPage() {
                   This section will host the language tree and actual learning material.
                 </p>
                 <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
-                  Start Learning Session
+                   Start Learning Session
                 </Button>
               </section>
             </CarouselItem>
