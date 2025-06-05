@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Header from '@/components/ui/Header';
+import NavigationBar from '@/components/ui/NavigationBar';
 import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -114,7 +114,7 @@ const languageCourses = [
 export default function CoursesPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-white">
-      <Header />
+      <NavigationBar />
       <main className="flex-grow">
         
         {/* Hero Section */}

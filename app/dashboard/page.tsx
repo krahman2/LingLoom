@@ -2,82 +2,232 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import Image from 'next/image';
+import { auth, db } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
 import Link from 'next/link';
+import { useUserLanguage } from '@/lib/useUserLanguage';
+import { Button } from '@/components/ui/button';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, LogOut, PlusCircle, BarChartHorizontalBig, BookCopy } from 'lucide-react';
+import StatsDashboard from '@/components/ui/StatsDashboard';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  const {
+    user,
+    loading,
+    activeLanguage,
+    userLanguages,
+    hasActiveLanguage,
+    redirectToLanguageSelection,
+    refetchLanguageData
+  } = useUserLanguage();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-      if (currentUser) {
-        setUser(currentUser);
-        // Optional: Further check for email verification if needed here for direct access
-        // if (currentUser.email && !currentUser.emailVerified) {
-        //   router.push('/verify-email');
-        // }
-      } else {
-        router.push('/login'); // Not logged in, redirect to login
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!hasActiveLanguage && (!userLanguages || userLanguages.length === 0)) {
+        redirectToLanguageSelection();
+      } else if (!hasActiveLanguage && userLanguages && userLanguages.length > 0) {
+        redirectToLanguageSelection();
       }
-      setLoading(false);
+    }
+  }, [user, loading, hasActiveLanguage, userLanguages, router, redirectToLanguageSelection]);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
     });
-    return () => unsubscribe();
-  }, [router]);
+  }, [api]);
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/login'); // Redirect to login page after sign out
+      router.push('/login');
     } catch (error) {
       console.error("Error signing out: ", error);
-      // Handle error (e.g., show a message to the user)
+    }
+  };
+
+  const handleSwitchActiveLanguage = async (newLangCode: string) => {
+    if (!user || !newLangCode || newLangCode === activeLanguage) return;
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        activeLanguage: newLangCode
+      });
+      await refetchLanguageData();
+    } catch (error) {
+      console.error("Error switching active language: ", error);
+      alert("Failed to switch language. Please try again.");
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <p>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="ml-3">Loading Dashboard...</p>
       </div>
     );
   }
 
-  if (!user) {
-    // This case should ideally be handled by the redirect in onAuthStateChanged
-    // but as a fallback:
+  if (!user || !hasActiveLanguage || !userLanguages || userLanguages.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <p>Redirecting to login...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <p>Loading user data or redirecting...</p>
       </div>
     );
   }
+
+  const activeLangDetails = userLanguages.find(lang => lang.langCode === activeLanguage);
+  const currentLangName = activeLangDetails?.langName || activeLanguage || "Select Language";
+  const currentLangFlag = activeLangDetails?.flag || 'default-flag.png';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Welcome to the Dashboard!</h1>
-        <p className="mb-2 text-gray-700">You are logged in as:</p>
-        <p className="mb-4 font-semibold text-gray-900">{user.email || user.phoneNumber || user.displayName || 'User'}</p>
-        {user.email && (
-          <p className="mb-4 text-sm text-gray-700">
-            Email Verified: {user.emailVerified ? <span className="text-green-500">Yes</span> : <span className="text-red-500">No</span>}
-            {!user.emailVerified && (
-              <Link href="/verify-email" className="ml-2 text-blue-500 hover:underline">
-                (Verify Now)
-              </Link>
+    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+          <Link href="/" className="flex items-center">
+            <Image src="/images/logo.png" alt="LingLoom Logo" width={120} height={32} priority />
+          </Link>
+          <div className="flex items-center gap-3 md:gap-4">
+            {userLanguages && userLanguages.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-2 border-gray-700 hover:bg-gray-800 text-gray-100 hover:text-white pr-2"
+                  >
+                    {currentLangFlag && currentLangFlag !== 'default-flag.png' && (
+                      <Image
+                        src={`/images/Flags/${currentLangFlag}`}
+                        alt={`${currentLangName} flag`}
+                        width={20}
+                        height={15}
+                        className="h-4 w-5 object-contain rounded-sm"
+                      />
+                    )}
+                    {(currentLangFlag === 'default-flag.png' || !currentLangFlag) && (
+                      <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
+                    )}
+                    <span className="hidden sm:inline">{currentLangName}</span>
+                    <ChevronDown className="h-4 w-4 opacity-80" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white w-56">
+                  <DropdownMenuLabel className="text-gray-400 px-2 py-1.5">Switch Language</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  {userLanguages.map((lang) => (
+                    <DropdownMenuItem 
+                      key={lang.langCode} 
+                      onClick={() => handleSwitchActiveLanguage(lang.langCode)}
+                      disabled={lang.langCode === activeLanguage}
+                      className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed flex items-center gap-2 px-2 py-1.5"
+                    >
+                      {lang.flag && lang.flag !== 'default-flag.png' && (
+                        <Image
+                          src={`/images/Flags/${lang.flag}`}
+                          alt={`${lang.langName} flag`}
+                          width={20}
+                          height={15}
+                          className="h-4 w-5 object-contain rounded-sm"
+                        />
+                      )}
+                      {(!lang.flag || lang.flag === 'default-flag.png') && (
+                        <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
+                      )}
+                      {lang.langName}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem 
+                    onClick={() => router.push('/select-language')} 
+                    className="hover:bg-gray-700 focus:bg-gray-700 flex items-center gap-2 px-2 py-1.5"
+                  >
+                    <PlusCircle className="mr-1 h-4 w-4" />
+                    Add/Manage Languages
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-          </p>
-        )}
-        <button
-          onClick={handleSignOut}
-          className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-        >
-          Sign Out
-        </button>
-      </div>
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-gray-800">
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="w-full px-4 md:px-6 lg:px-8 pt-3 pb-6 flex-grow flex flex-col">
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-100">Your Progress Dashboard</h2>
+
+        <Carousel setApi={setApi} className="w-full flex-grow">
+          <CarouselContent className="h-full">
+            <CarouselItem className="h-full flex flex-col overflow-y-auto">
+              <div className="container mx-auto py-6 flex-grow flex items-center justify-center">
+                <div className="bg-gray-800 rounded-lg shadow-xl w-full p-6">
+                  <StatsDashboard />
+                </div>
+              </div>
+            </CarouselItem>
+            <CarouselItem className="h-full flex flex-col">
+              <section className="p-6 bg-gray-800 rounded-lg shadow-xl h-full flex flex-col flex-grow">
+                <div className="flex items-center mb-4">
+                  <BookCopy className="w-6 h-6 text-accent mr-3" />
+                  <h2 className="text-xl font-semibold">Learning Content: <span className="text-accent">{currentLangName}</span></h2>
+                </div>
+                <p className="text-gray-400 mb-4 flex-grow">
+                  Your lessons, activities, and interactive modules for {currentLangName} will appear here.
+                  This section will host the language tree and actual learning material.
+                </p>
+                <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
+                  Start Learning Session
+                </Button>
+              </section>
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+        <div className="flex justify-center space-x-2 mt-4 py-2">
+          {Array.from({ length: count }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => api?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary transition-colors
+                ${current === index + 1 ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
+            />
+          ))}
+        </div>
+      </main>
     </div>
   );
 } 

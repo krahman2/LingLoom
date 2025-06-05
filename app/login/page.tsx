@@ -9,7 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -20,6 +20,7 @@ import {
   ConfirmationResult,
   signInWithPhoneNumber,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,6 @@ export default function LoginPage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [isOtpSubmitting, setIsOtpSubmitting] = useState(false);
 
-
   const {
     register,
     handleSubmit,
@@ -66,17 +66,37 @@ export default function LoginPage() {
     mode: "onChange",
   });
 
+  // Helper function to check language selection and redirect accordingly
+  const handleSuccessfulLogin = async (user: any) => {
+    try {
+      // Check if user has email verification issues first
+      if (user && user.email && !user.emailVerified) {
+        router.push("/verify-email");
+        return;
+      }
+
+      // Check if user has selected a language
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists() && userDoc.data()?.selectedLanguage) {
+        // User has selected a language, go to dashboard
+        router.push("/dashboard");
+      } else {
+        // User hasn't selected a language, go to language selection
+        router.push("/select-language");
+      }
+    } catch (error) {
+      console.error("Error checking user language:", error);
+      // Fallback to dashboard
+      router.push("/dashboard");
+    }
+  };
+
   // Email/Password Login Handler
   const onSubmitEmailPassword = async (data: LoginForm) => {
     setFirebaseError(null);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      const user = userCredential.user;
-      if (user && user.email && !user.emailVerified) {
-        router.push("/verify-email");
-      } else {
-        router.push("/dashboard");
-      }
+      await handleSuccessfulLogin(userCredential.user);
     } catch (err: any) {
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
         setFirebaseError("No user found with this email.");
@@ -97,12 +117,7 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      if (user && user.email && !user.emailVerified) {
-        router.push("/verify-email");
-      } else {
-        router.push("/dashboard");
-      }
+      await handleSuccessfulLogin(result.user);
     } catch (error: any) {
       setFirebaseError(error.message || "Failed to sign in with Google.");
     }
@@ -114,12 +129,7 @@ export default function LoginPage() {
     const provider = new FacebookAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      if (user && user.email && !user.emailVerified) {
-        router.push("/verify-email");
-      } else {
-        router.push("/dashboard");
-      }
+      await handleSuccessfulLogin(result.user);
     } catch (error: any) {
       setFirebaseError(error.message || "Failed to sign in with Facebook.");
     }
@@ -174,14 +184,7 @@ export default function LoginPage() {
     setIsOtpSubmitting(true);
     try {
       const userCredential = await confirmationResult.confirm(otp);
-      const user = userCredential.user;
-      // For phone sign-in, email might not exist, or if it does, it might not be verified yet
-      // if they previously created an account with email+pass and are now linking/signing in with phone.
-      if (user && user.email && !user.emailVerified) {
-        router.push("/verify-email");
-      } else {
-        router.push("/dashboard");
-      }
+      await handleSuccessfulLogin(userCredential.user);
     } catch (error: any) {
       if (error.code === 'auth/invalid-verification-code') {
         setFirebaseError("Invalid OTP. Please try again.");

@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/ui/Header';
+import NavigationBar from '@/components/ui/NavigationBar';
 import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import Link from 'next/link'; // For email links, though technically <a> tags are used
@@ -48,7 +48,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <Header />
+      <NavigationBar />
       <main className="flex-grow">
         
         {/* Hero Section */}
