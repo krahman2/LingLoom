@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Rocket, Sparkles, BookOpen, Heart, Target, Mail, GraduationCap } from "lucide-react"; // Keep all icons for now, will remove unused later if needed
+import { Rocket, Sparkles, BookOpen, Heart, Target, Mail, GraduationCap, DollarSign } from "lucide-react"; // Keep all icons for now, will remove unused later if needed
 
 export default function NavigationBar() {
   return (
@@ -48,6 +48,13 @@ export default function NavigationBar() {
         >
           <GraduationCap className="w-4 h-4" />
           Courses
+        </Link>
+        <Link 
+          href="/pricing" 
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+        >
+          <DollarSign className="w-4 h-4" />
+          Pricing
         </Link>
         <Link 
           href="/contact" 

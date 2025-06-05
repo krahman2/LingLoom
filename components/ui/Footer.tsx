@@ -44,6 +44,7 @@ export default function Footer() {
               <Link href="/mission">Mission</Link>
               <Link href="/courses">Courses</Link>
               <Link href="/approach">Approach</Link>
+              <Link href="/pricing">Pricing</Link>
               <Link href="/contact">Contact</Link>
             </nav>
           </div>
