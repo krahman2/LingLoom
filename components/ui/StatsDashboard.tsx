@@ -60,7 +60,7 @@ export default function StatsDashboard() {
   return (
     <div className="w-full">
       {/* <h2 className="text-3xl font-bold text-center mb-8 text-white">Your Progress Dashboard</h2> */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
         <div className="flex flex-col gap-6">
           <div className="flex-1 flex items-start justify-center">
             <LearningMetricsSection stats={placeholderStats.learningMetrics} />
@@ -70,7 +70,7 @@ export default function StatsDashboard() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-0">
           <div className="flex-1 flex items-start justify-center">
             <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
           </div>

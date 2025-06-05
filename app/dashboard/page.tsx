@@ -25,7 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LogOut, PlusCircle, BarChartHorizontalBig, BookCopy } from 'lucide-react';
+import { ChevronDown, LogOut, PlusCircle, BarChartHorizontalBig, BookCopy, ChevronLeft, ChevronRight } from 'lucide-react';
 import StatsDashboard from '@/components/ui/StatsDashboard';
 
 export default function DashboardPage() {
@@ -111,14 +111,25 @@ export default function DashboardPage() {
 
   const activeLangDetails = userLanguages.find(lang => lang.langCode === activeLanguage);
   const currentLangName = activeLangDetails?.langName || activeLanguage || "Select Language";
-  const currentLangFlag = activeLangDetails?.flag || 'default-flag.png';
+
+  // Temporary workaround: Map langCode to flag filename
+  const langCodeToFlagMap: { [key: string]: string } = {
+    'bengali': 'bangladesh.png', // Assuming 'bengali' is the langCode for Bangla
+    'hindi': 'india.png',     // Assuming 'hindi' is the langCode for Hindi
+    // Add other language codes and their corresponding flag images here
+    // e.g. 'marathi': 'india.png', (if you distinguish by langCode)
+  };
+  
+  const determinedCurrentLangFlag = activeLangDetails 
+    ? langCodeToFlagMap[activeLangDetails.langCode.toLowerCase()] || 'default-flag.png' 
+    : 'default-flag.png';
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
           <Link href="/" className="flex items-center">
-            <Image src="/images/logo.png" alt="LingLoom Logo" width={120} height={32} priority />
+            <Image src="/images/logo.png" alt="LingLoom Logo" width={40} height={11} priority />
           </Link>
           <div className="flex items-center gap-3 md:gap-4">
             {userLanguages && userLanguages.length > 0 && (
@@ -126,18 +137,18 @@ export default function DashboardPage() {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline"
-                    className="flex items-center gap-2 border-gray-700 hover:bg-gray-800 text-gray-100 hover:text-white pr-2"
+                    className="flex items-center gap-2 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white hover:text-gray-100 pr-2"
                   >
-                    {currentLangFlag && currentLangFlag !== 'default-flag.png' && (
+                    {determinedCurrentLangFlag && determinedCurrentLangFlag !== 'default-flag.png' && (
                       <Image
-                        src={`/images/Flags/${currentLangFlag}`}
+                        src={`/images/flags/${determinedCurrentLangFlag}`}
                         alt={`${currentLangName} flag`}
                         width={20}
                         height={15}
                         className="h-4 w-5 object-contain rounded-sm"
                       />
                     )}
-                    {(currentLangFlag === 'default-flag.png' || !currentLangFlag) && (
+                    {(determinedCurrentLangFlag === 'default-flag.png' || !determinedCurrentLangFlag) && (
                       <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
                     )}
                     <span className="hidden sm:inline">{currentLangName}</span>
@@ -147,28 +158,31 @@ export default function DashboardPage() {
                 <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white w-56">
                   <DropdownMenuLabel className="text-gray-400 px-2 py-1.5">Switch Language</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-700" />
-                  {userLanguages.map((lang) => (
-                    <DropdownMenuItem 
-                      key={lang.langCode} 
-                      onClick={() => handleSwitchActiveLanguage(lang.langCode)}
-                      disabled={lang.langCode === activeLanguage}
-                      className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed flex items-center gap-2 px-2 py-1.5"
-                    >
-                      {lang.flag && lang.flag !== 'default-flag.png' && (
-                        <Image
-                          src={`/images/Flags/${lang.flag}`}
-                          alt={`${lang.langName} flag`}
-                          width={20}
-                          height={15}
-                          className="h-4 w-5 object-contain rounded-sm"
-                        />
-                      )}
-                      {(!lang.flag || lang.flag === 'default-flag.png') && (
-                        <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
-                      )}
-                      {lang.langName}
-                    </DropdownMenuItem>
-                  ))}
+                  {userLanguages.map((lang) => {
+                    const flagFileName = langCodeToFlagMap[lang.langCode.toLowerCase()] || 'default-flag.png';
+                    return (
+                      <DropdownMenuItem 
+                        key={lang.langCode} 
+                        onClick={() => handleSwitchActiveLanguage(lang.langCode)}
+                        disabled={lang.langCode === activeLanguage}
+                        className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed flex items-center gap-2 px-2 py-1.5"
+                      >
+                        {flagFileName && flagFileName !== 'default-flag.png' && (
+                          <Image
+                            src={`/images/flags/${flagFileName}`}
+                            alt={`${lang.langName} flag`}
+                            width={20}
+                            height={15}
+                            className="h-4 w-5 object-contain rounded-sm"
+                          />
+                        )}
+                        {(!flagFileName || flagFileName === 'default-flag.png') && (
+                          <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
+                        )}
+                        {lang.langName}
+                      </DropdownMenuItem>
+                    );
+                  })}
                   <DropdownMenuSeparator className="bg-gray-700" />
                   <DropdownMenuItem 
                     onClick={() => router.push('/select-language')} 
@@ -187,10 +201,46 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="w-full px-4 md:px-6 lg:px-8 pt-3 pb-6 flex-grow flex flex-col">
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-100">Your Progress Dashboard</h2>
+      <main className="w-full px-4 md:px-6 lg:px-8 pt-2 pb-6 flex-grow flex flex-col">
+        <div className="flex justify-center items-center space-x-3 mb-2 py-1">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => api?.scrollPrev()}
+            disabled={!api?.canScrollPrev()}
+            className="h-6 w-6 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white disabled:opacity-50"
+          >
+            <ChevronLeft className="h-3 w-3" />
+            <span className="sr-only">Previous slide</span>
+          </Button>
+          
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: count }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => api?.scrollTo(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`w-1.5 h-1.5 rounded-full focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-900 focus:ring-primary transition-colors
+                  ${current === index + 1 ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
+              />
+            ))}
+          </div>
 
-        <Carousel setApi={setApi} className="w-full flex-grow">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => api?.scrollNext()}
+            disabled={!api?.canScrollNext()}
+            className="h-6 w-6 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white disabled:opacity-50"
+          >
+            <ChevronRight className="h-3 w-3" />
+            <span className="sr-only">Next slide</span>
+          </Button>
+        </div>
+
+        <h2 className="text-3xl font-bold text-center mb-3 text-gray-100">Your Progress Dashboard</h2>
+
+        <Carousel setApi={setApi} className="w-full flex-grow relative">
           <CarouselContent className="h-full">
             <CarouselItem className="h-full flex flex-col overflow-y-auto">
               <div className="container mx-auto py-6 flex-grow flex items-center justify-center">
@@ -216,17 +266,6 @@ export default function DashboardPage() {
             </CarouselItem>
           </CarouselContent>
         </Carousel>
-        <div className="flex justify-center space-x-2 mt-4 py-2">
-          {Array.from({ length: count }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => api?.scrollTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-primary transition-colors
-                ${current === index + 1 ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
-            />
-          ))}
-        </div>
       </main>
     </div>
   );

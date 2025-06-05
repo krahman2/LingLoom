@@ -32,7 +32,7 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string; description
         <h3 className="text-xs font-medium">{title}</h3>
       </div>
       <div className="text-center text-gray-500 py-8 flex-grow flex flex-col justify-center items-center">
-        <p className="text-sm">({chartType} Placeholder)</p>
+        <p className="text-xs">({chartType} Placeholder)</p>
         {description && <p className="text-xs mt-1">{description}</p>}
       </div>
     </div>
@@ -42,9 +42,9 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string; description
 export default function PersonalInsightsSection({ stats }: PersonalInsightsProps) {
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div className="flex items-center mb-6">
-        <User className="w-6 h-6 text-green-400 mr-3" />
-        <h2 className="text-xl font-semibold text-white">Personal Insights</h2>
+      <div className="flex items-center mb-4">
+        <User className="w-5 h-5 text-green-400 mr-2" />
+        <h2 className="text-lg font-semibold text-white">Personal Insights</h2>
       </div>
       <div className="grid grid-cols-1 gap-4">
         <ChartPlaceholder 
@@ -54,7 +54,7 @@ export default function PersonalInsightsSection({ stats }: PersonalInsightsProps
         />
         <div>
           <div className="flex items-center text-gray-400 mb-2">
-            <ShieldQuestion className="w-4 h-4 mr-2" />
+            <ShieldQuestion className="w-4 h-4 mr-1.5" />
             <h3 className="text-xs font-medium">Retention Score per Category</h3>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-2">
@@ -66,7 +66,7 @@ export default function PersonalInsightsSection({ stats }: PersonalInsightsProps
                     {item.score}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1.5">
                   <div 
                     className={`${item.score > 80 ? 'bg-green-500' : item.score > 60 ? 'bg-yellow-500' : 'bg-red-500'} h-1.5 rounded-full`}
                     style={{ width: `${item.score}%` }}
@@ -78,12 +78,12 @@ export default function PersonalInsightsSection({ stats }: PersonalInsightsProps
         </div>
         <div>
           <div className="flex items-center text-gray-400 mb-2">
-            <HelpCircle className="w-4 h-4 mr-2" />
+            <HelpCircle className="w-4 h-4 mr-1.5" />
             <h3 className="text-xs font-medium">Top Words You Struggle With</h3>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
             {stats.topStrugglingWords.length > 0 ? (
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {stats.topStrugglingWords.map((item, index) => (
                   <li key={index} className="text-xs text-gray-300 flex justify-between items-center">
                     <span>{item.word}</span>
@@ -101,23 +101,24 @@ export default function PersonalInsightsSection({ stats }: PersonalInsightsProps
         <div>
           <div className="flex items-center justify-between text-gray-400 mb-2">
             <div className="flex items-center">
-              <Goal className="w-4 h-4 mr-2" />
+              <Goal className="w-4 h-4 mr-1.5" />
               <h3 className="text-xs font-medium">Custom Weekly Goals</h3>
             </div>
             <button className="text-xs text-blue-400 hover:text-blue-300 flex items-center">
-              <PlusCircle className="w-3 h-3 mr-1" /> Add Goal
+              <PlusCircle className="w-4 h-4 mr-1" />
+              Add Goal
             </button>
           </div>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-1">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-1.5">
             {stats.customGoals.map((goal, index) => (
               <div key={index} className="flex items-center justify-between text-xs">
                 <div className="flex items-center">
-                  <input type="checkbox" checked={goal.completed} readOnly className="form-checkbox h-3 w-3 text-blue-500 bg-gray-700 border-gray-600 rounded mr-2 focus:ring-blue-600" />
+                  <input type="checkbox" checked={goal.completed} readOnly className="form-checkbox h-4 w-4 text-blue-500 bg-gray-700 border-gray-600 rounded mr-1.5 focus:ring-blue-600" />
                   <span className={`${goal.completed ? 'line-through text-gray-500' : 'text-gray-300'}`}>{goal.text}</span>
                 </div>
                 {!goal.completed && (
                   <button className="text-xs text-gray-500 hover:text-gray-400">
-                    <Edit3 className="w-3 h-3" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
                 )}
               </div>

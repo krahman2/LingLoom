@@ -14,24 +14,24 @@ interface LearningMetricsProps {
 
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col">
-      <div className="flex items-center text-gray-400 mb-2">
-        <Icon className="w-4 h-4 mr-2" />
+    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col">
+      <div className="flex items-center text-gray-400 mb-1.5">
+        <Icon className="w-3 h-3 mr-2" />
         <h3 className="text-xs font-medium">{title}</h3>
       </div>
-      <div className="text-xl font-bold text-white">{children}</div>
+      <div className="text-lg font-bold text-white">{children}</div>
     </div>
   );
 };
 
 export default function LearningMetricsSection({ stats }: LearningMetricsProps) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div className="flex items-center mb-6">
-        <Brain className="w-6 h-6 text-purple-400 mr-3" />
-        <h2 className="text-xl font-semibold text-white">Learning Metrics</h2>
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+      <div className="flex items-center mb-4">
+        <Brain className="w-5 h-5 text-purple-400 mr-2" />
+        <h2 className="text-lg font-semibold text-white">Learning Metrics</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <StatCard title="Total Words Learned" icon={Hash}>
           {stats.totalWordsLearned}
           <p className="text-xs text-gray-500 mt-1 font-normal">{stats.wordsByOption}</p>
