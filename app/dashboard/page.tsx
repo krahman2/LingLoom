@@ -1,21 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { auth, db } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
-import Link from 'next/link';
 import { useUserLanguage } from '@/lib/useUserLanguage';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
 import {
@@ -26,24 +19,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LogOut, PlusCircle, BookCopy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, ChevronDown, LogOut, PlusCircle, Book, Wrench, Video, Mic, Users } from 'lucide-react';
+import { auth, db } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
+import Link from 'next/link';
+
+// Import the new components
 import StatsDashboard from '@/components/ui/StatsDashboard';
+import CoreTree from '@/components/dashboard/CoreTree';
+import GrammarPath from '@/components/dashboard/GrammarPath';
+import ImmersionHub from '@/components/dashboard/ImmersionHub';
+import SkillsStudio from '@/components/dashboard/SkillsStudio';
+import SocialFeed from '@/components/dashboard/SocialFeed';
+import BottomNavBar from '@/components/dashboard/BottomNavBar';
 
-const titleVariants = {
-  hidden: { opacity: 0, y: -20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.2 } }
-};
-
-const controlsVariants = {
-  hidden: { opacity: 0, y: -10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.4 } }
-};
+const TABS = [
+  { name: 'Dashboard', icon: LayoutDashboard, component: StatsDashboard },
+  { name: 'Core Tree', icon: Book, component: CoreTree },
+  { name: 'Grammar Path', icon: Wrench, component: GrammarPath },
+  { name: 'Immersion Hub', icon: Video, component: ImmersionHub },
+  { name: 'Social', icon: Users, component: SocialFeed },
+  { name: 'Skills Studio', icon: Mic, component: SkillsStudio },
+];
 
 export default function DashboardPage() {
   const router = useRouter();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
 
   const {
     user,
@@ -68,16 +71,9 @@ export default function DashboardPage() {
   }, [user, loading, hasActiveLanguage, userLanguages, router, redirectToLanguageSelection]);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    });
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+    api.on("select", () => setCurrent(api.selectedScrollSnap()));
   }, [api]);
 
   const handleSignOut = async () => {
@@ -93,9 +89,7 @@ export default function DashboardPage() {
     if (!user || !newLangCode || newLangCode === activeLanguage) return;
     try {
       const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        activeLanguage: newLangCode
-      });
+      await updateDoc(userDocRef, { activeLanguage: newLangCode });
       await refetchLanguageData();
     } catch (error) {
       console.error("Error switching active language: ", error);
@@ -133,7 +127,8 @@ export default function DashboardPage() {
     : 'default-flag.png';
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white relative">
+    <div className="min-h-screen flex flex-col bg-black text-white">
+      {/* Video Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <video
           autoPlay
@@ -145,12 +140,15 @@ export default function DashboardPage() {
         />
         <div className="absolute inset-0 w-full h-full bg-black/50 z-1" />
       </div>
-      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black">
-        <div className="w-full flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
+
+      {/* Top Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-sm">
+        <div className="w-full flex h-16 items-center justify-between px-4 md:px-6">
           <Link href="/" className="flex items-center">
-            <Image src="/images/logo.png" alt="LingLoom Logo" width={40} height={11} priority />
+            <Image src="/images/logo.png" alt="LingLoom Logo" width={40} height={40} priority />
           </Link>
           <div className="flex items-center gap-3 md:gap-4">
+            {/* Language Switcher Dropdown */}
             {userLanguages && userLanguages.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -158,18 +156,12 @@ export default function DashboardPage() {
                     variant="outline"
                     className="flex items-center gap-2 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white hover:text-gray-100 pr-2"
                   >
-                    {determinedCurrentLangFlag && determinedCurrentLangFlag !== 'default-flag.png' && (
-                      <Image
-                        src={`/images/flags/${determinedCurrentLangFlag}`}
-                        alt={`${currentLangName} flag`}
-                        width={20}
-                        height={15}
-                        className="h-4 w-5 object-contain rounded-sm"
-                      />
-                    )}
-                    {(determinedCurrentLangFlag === 'default-flag.png' || !determinedCurrentLangFlag) && (
-                      <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
-                    )}
+                    <Image
+                      src={`/images/flags/${determinedCurrentLangFlag}`}
+                      alt={`${currentLangName} flag`}
+                      width={20} height={15}
+                      className="h-4 w-5 object-contain rounded-sm"
+                    />
                     <span className="hidden sm:inline">{currentLangName}</span>
                     <ChevronDown className="h-4 w-4 opacity-80" />
                   </Button>
@@ -177,31 +169,22 @@ export default function DashboardPage() {
                 <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white w-56">
                   <DropdownMenuLabel className="text-gray-400 px-2 py-1.5">Switch Language</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-700" />
-                  {userLanguages.map((lang) => {
-                    const flagFileName = langCodeToFlagMap[lang.langCode.toLowerCase()] || 'default-flag.png';
-                    return (
-                      <DropdownMenuItem 
-                        key={lang.langCode} 
-                        onClick={() => handleSwitchActiveLanguage(lang.langCode)}
-                        disabled={lang.langCode === activeLanguage}
-                        className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed flex items-center gap-2 px-2 py-1.5"
-                      >
-                        {flagFileName && flagFileName !== 'default-flag.png' && (
-                          <Image
-                            src={`/images/flags/${flagFileName}`}
-                            alt={`${lang.langName} flag`}
-                            width={20}
-                            height={15}
-                            className="h-4 w-5 object-contain rounded-sm"
-                          />
-                        )}
-                        {(!flagFileName || flagFileName === 'default-flag.png') && (
-                          <span className="w-5 h-4 rounded-sm bg-gray-700 flex items-center justify-center text-xs text-gray-400">?</span>
-                        )}
-                        {lang.langName}
-                      </DropdownMenuItem>
-                    );
-                  })}
+                  {userLanguages.map((lang) => (
+                    <DropdownMenuItem 
+                      key={lang.langCode} 
+                      onClick={() => handleSwitchActiveLanguage(lang.langCode)}
+                      disabled={lang.langCode === activeLanguage}
+                      className="hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:opacity-50 flex items-center gap-2 px-2 py-1.5"
+                    >
+                      <Image
+                        src={`/images/flags/${langCodeToFlagMap[lang.langCode.toLowerCase()] || 'default-flag.png'}`}
+                        alt={`${lang.langName} flag`}
+                        width={20} height={15}
+                        className="h-4 w-5 object-contain rounded-sm"
+                      />
+                      {lang.langName}
+                    </DropdownMenuItem>
+                  ))}
                   <DropdownMenuSeparator className="bg-gray-700" />
                   <DropdownMenuItem 
                     onClick={() => router.push('/select-language')} 
@@ -218,86 +201,44 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-      </header>
-
-      <main className="w-full px-4 md:px-6 lg:px-8 pt-2 pb-6 flex-grow flex flex-col relative z-10">
-        <motion.div 
-          className="flex justify-center items-center space-x-3 mb-2 py-1"
-          variants={controlsVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => api?.scrollPrev()}
-            disabled={!api?.canScrollPrev()}
-            className="h-6 w-6 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white disabled:opacity-50"
-          >
-            <ChevronLeft className="h-3 w-3" />
-            <span className="sr-only">Previous slide</span>
-          </Button>
-          
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: count }).map((_, index) => (
+        {/* Tab Navigation for swipeable content */}
+        <nav className="flex justify-center border-t border-gray-800">
+          <div className="flex space-x-2 sm:space-x-4 md:space-x-8 p-2">
+            {TABS.map((tab, index) => (
               <button
-                key={index}
+                key={tab.name}
                 onClick={() => api?.scrollTo(index)}
-                aria-label={`Go to slide ${index + 1}`}
-                className={`w-1.5 h-1.5 rounded-full focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-900 focus:ring-primary transition-colors
-                  ${current === index + 1 ? 'bg-primary' : 'bg-gray-600 hover:bg-gray-500'}`}
-              />
+                className={`flex flex-col sm:flex-row items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  current === index
+                    ? 'text-primary bg-primary/10'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <tab.icon className="h-5 w-5" />
+                <span className="hidden sm:inline">{tab.name}</span>
+              </button>
             ))}
           </div>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => api?.scrollNext()}
-            disabled={!api?.canScrollNext()}
-            className="h-6 w-6 border-gray-700 bg-gray-800 hover:bg-gray-700 text-white disabled:opacity-50"
-          >
-            <ChevronRight className="h-3 w-3" />
-            <span className="sr-only">Next slide</span>
-          </Button>
-        </motion.div>
-
-        <motion.h2 
-          className="text-3xl font-bold text-center mb-3 text-gray-100"
-          variants={titleVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          Your Progress Dashboard
-        </motion.h2>
-
-        <Carousel setApi={setApi} className="w-full flex-grow relative">
+        </nav>
+      </header>
+      
+      {/* Main Content Area */}
+      <main className="flex-grow relative z-10">
+        <Carousel setApi={setApi} className="w-full h-full">
           <CarouselContent className="h-full">
-            <CarouselItem className="h-full flex flex-col overflow-y-auto">
-              <div className="container mx-auto py-6 flex-grow flex items-center justify-center">
-                <div className="bg-gray-800 rounded-lg shadow-xl w-full p-6">
-                  <StatsDashboard />
+            {TABS.map((tab, index) => (
+              <CarouselItem key={index} className="h-full overflow-y-auto">
+                <div className="w-full h-full flex items-start justify-center p-1">
+                  <tab.component />
                 </div>
-              </div>
-            </CarouselItem>
-            <CarouselItem className="h-full flex flex-col">
-              <section className="p-6 bg-gray-800 rounded-lg shadow-xl h-full flex flex-col flex-grow">
-                <div className="flex items-center mb-4">
-                  <BookCopy className="w-6 h-6 text-accent mr-3" />
-                  <h2 className="text-xl font-semibold">Learning Content: <span className="text-accent">{currentLangName}</span></h2>
-                </div>
-                <p className="text-gray-400 mb-4 flex-grow">
-                  Your lessons, activities, and interactive modules for {currentLangName} will appear here.
-                  This section will host the language tree and actual learning material.
-                </p>
-                <Button variant="outline" className="mt-auto w-full border-primary text-primary hover:bg-primary/10">
-                   Start Learning Session
-                </Button>
-              </section>
-            </CarouselItem>
+              </CarouselItem>
+            ))}
           </CarouselContent>
         </Carousel>
       </main>
+
+      {/* Bottom Navigation Bar */}
+      <BottomNavBar />
     </div>
   );
 } 

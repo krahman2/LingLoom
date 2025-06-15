@@ -6,6 +6,7 @@ import TimeBasedStatsSection from './stats/TimeBasedStatsSection';
 import ConsistencyReviewSection from './stats/ConsistencyReviewSection';
 import GamificationAchievementsSection from './stats/GamificationAchievementsSection';
 import PersonalInsightsSection from './stats/PersonalInsightsSection';
+import CustomGoalsSection from './stats/CustomGoalsSection';
 import { cn } from "@/lib/utils"; // Assuming you use shadcn's cn utility
 
 // Placeholder data for demonstration
@@ -73,57 +74,22 @@ const columnVariants = {
 };
 
 export default function StatsDashboard() {
-  // Removed activeIndex, sections array, and ActiveSection logic
-
   return (
-    <div className="w-full">
-      {/* <h2 className="text-3xl font-bold text-center mb-8 text-white">Your Progress Dashboard</h2> */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
-        <motion.div
-          className="flex flex-col gap-6"
-          variants={columnVariants}
-          initial="hidden"
-          animate="visible"
-          whileHover="hover"
-          custom={0} // Index for stagger
-        >
-          <div className="flex-1 flex items-start justify-center">
-            <LearningMetricsSection stats={placeholderStats.learningMetrics} />
-          </div>
-          <div className="flex-1 flex items-start justify-center">
-            <TimeBasedStatsSection stats={placeholderStats.timeBasedStats} />
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-col gap-0" // Retain original gap for this column
-          variants={columnVariants}
-          initial="hidden"
-          animate="visible"
-          whileHover="hover"
-          custom={1} // Index for stagger
-        >
-          <div className="flex-1 flex items-start justify-center">
-            <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
-          </div>
-          <div className="flex-1 flex items-start justify-center">
-            <GamificationAchievementsSection stats={placeholderStats.gamification} />
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="lg:col-span-1 flex flex-col"
-          variants={columnVariants}
-          initial="hidden"
-          animate="visible"
-          whileHover="hover"
-          custom={2} // Index for stagger
-        >
-          <div className="flex-1 flex items-start justify-center">
-            <PersonalInsightsSection stats={placeholderStats.personalInsights} />
-          </div>
-        </motion.div>
-      </div>
+    <div className="w-full p-4 sm:p-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="space-y-6">
+          <LearningMetricsSection />
+          <TimeBasedStatsSection />
+        </div>
+        <div className="space-y-6">
+          <ConsistencyReviewSection />
+          <GamificationAchievementsSection />
+        </div>
+        <div className="space-y-6">
+          <PersonalInsightsSection />
+          <CustomGoalsSection />
+        </div>
+      </section>
     </div>
   );
 } 

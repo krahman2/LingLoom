@@ -165,7 +165,7 @@ export default function SelectLanguagePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-black/80">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p>Loading...</p>
@@ -175,141 +175,151 @@ export default function SelectLanguagePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white px-4 py-8">
-      <motion.div 
-        className="max-w-5xl mx-auto"
-        variants={containerVariant}
-        initial="hidden"
-        animate="visible"
-      >
-        <div className="text-center mb-12">
-          <motion.h1 variants={itemVariant} className="text-4xl md:text-5xl font-bold mb-4">
-            Which course do you want to take?
-          </motion.h1>
-          <motion.p variants={itemVariant} className="text-lg md:text-xl text-gray-300">
-            Choose your learning adventure. Each course is designed for cultural immersion and real-world fluency.
-          </motion.p>
-        </div>
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        src="/animatedwallpapers/page7.mp4"
+      />
+      {/* Overlay for readability */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
+      {/* Main Content */}
+      <div className="relative z-20 min-h-screen flex flex-col justify-center items-center px-2 py-8 md:py-16">
+        <motion.div 
+          className="w-full max-w-5xl mx-auto"
+          variants={containerVariant}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="text-center mb-16 mt-8">
+            <motion.h1 
+              variants={itemVariant} 
+              className="text-4xl md:text-6xl font-extrabold mb-6 text-white drop-shadow-lg" 
+              style={{textShadow: '0 2px 16px rgba(0,0,0,0.7)'}}
+            >
+              Which course do you want to take?
+            </motion.h1>
+            <motion.p 
+              variants={itemVariant} 
+              className="text-lg md:text-2xl text-white opacity-90 max-w-2xl mx-auto mb-2"
+              style={{textShadow: '0 1px 8px rgba(0,0,0,0.5)'}}
+            >
+              Choose your learning adventure. Each course is designed for cultural immersion and real-world fluency.
+            </motion.p>
+          </div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
-          {languages.map((language) => {
-            const isSelected = selectedLanguageId === language.id;
-            const baseCardClasses = [
-              'rounded-2xl', 'shadow-2xl', 'cursor-pointer', 'transition-all', 'duration-300',
-              'transform', 'hover:-translate-y-1',
-              language.bgGradient,
-              'overflow-hidden'
-            ];
-            const selectedStateClasses = isSelected
-              ? [
-                  language.borderColor,
-                  'border-4',
-                  'scale-105',
-                  'ring-4',
-                  'ring-opacity-50',
-                  language.borderColor.replace('border-', 'ring-')
-                ]
-              : ['border-2', 'border-gray-700', 'hover:border-opacity-75'];
+          <div className="flex flex-col items-center">
+            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 justify-center mb-16">
+              {languages.map((language) => {
+                const isSelected = selectedLanguageId === language.id;
+                const baseCardClasses = [
+                  'rounded-xl', 'shadow-lg', 'cursor-pointer', 'transition-all', 'duration-200',
+                  'transform', 'hover:-translate-y-1',
+                  language.bgGradient,
+                  'overflow-hidden', 'border', 'bg-opacity-80',
+                  'p-4', 'min-h-[260px]', 'flex', 'flex-col', 'justify-between'
+                ];
+                const selectedStateClasses = isSelected
+                  ? [
+                      language.borderColor,
+                      'border-2',
+                      'scale-105',
+                      'ring-2',
+                      'ring-opacity-50',
+                      language.borderColor.replace('border-', 'ring-')
+                    ]
+                  : ['border-gray-600', 'hover:border-opacity-75'];
 
-            const cardClasses = [...baseCardClasses, ...selectedStateClasses].join(' ');
+                const cardClasses = [...baseCardClasses, ...selectedStateClasses].join(' ');
 
-            return (
-              <motion.div
-                key={language.id}
-                variants={itemVariant}
-                whileHover={{ scale: 1.03, y: -8 }}
-                className={cardClasses}
-                onClick={() => handleLanguageSelect(language.id)}
+                return (
+                  <motion.div
+                    key={language.id}
+                    variants={itemVariant}
+                    whileHover={{ scale: 1.03, y: -4 }}
+                    className={cardClasses}
+                    onClick={() => handleLanguageSelect(language.id)}
+                  >
+                    <div className="flex items-center mb-2">
+                      <Image src={`/images/flags/${language.flag}`} alt={language.name} width={32} height={22} className="mr-2 rounded shadow-sm" />
+                      <div>
+                        <h3 className={`text-lg font-bold ${language.textColor}`}>{language.name}</h3>
+                        <p className={`text-sm ${language.textColor} opacity-80`}>{language.nativeName}</p>
+                      </div>
+                      {isSelected && (
+                        <Check className="ml-auto h-6 w-6 text-white bg-green-500 rounded-full p-1 shadow" />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-700 mb-2 min-h-[2em]">{language.description}</p>
+                    <div className="space-y-1 mb-2 text-xs text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Users className={`w-3 h-3 ${language.textColor} opacity-75`} />
+                        <span>{language.speakers}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className={`w-3 h-3 ${language.textColor} opacity-75`} />
+                        <span>{language.difficulty}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className={`w-3 h-3 ${language.textColor} opacity-75`} />
+                        <span>Family: {language.family}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 italic mb-2 min-h-[1.5em]">{language.culturalNote}</p>
+                    <div className="border-t border-gray-200 pt-2 mt-2">
+                      <h4 className={`text-xs font-semibold mb-1 ${language.textColor}`}>Course Features:</h4>
+                      <div className="flex justify-between text-[11px] text-gray-700">
+                        <div className="flex flex-col items-center">
+                          <span role="img" aria-label="books" className="text-lg">📚</span>
+                          <span>Lessons</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span role="img" aria-label="theater masks" className="text-lg">🎭</span>
+                          <span>Cultural</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span role="img" aria-label="speech bubble" className="text-lg">🗣️</span>
+                          <span>Convos</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`mt-3 w-full h-1 rounded-full transition-all duration-200 ${isSelected ? `bg-gradient-to-r ${language.color}` : 'bg-gray-200'}`} />
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            <motion.div variants={itemVariant} className="text-center mb-12">
+              <Button
+                onClick={handleContinue}
+                disabled={!selectedLanguageId || isSubmitting || !authUser}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white font-semibold text-base py-2 px-6 rounded-full shadow-md transition-transform duration-200 hover:scale-105 disabled:opacity-70 group"
               >
-                <div className="p-6 text-gray-800">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <Image src={`/images/flags/${language.flag}`} alt={language.name} width={48} height={32} className="mr-4 rounded-md shadow-sm" />
-                      <div>
-                        <h3 className={`text-2xl font-bold ${language.textColor}`}>{language.name}</h3>
-                        <p className={`text-lg ${language.textColor} opacity-80`}>{language.nativeName}</p>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <Check className="h-8 w-8 text-white bg-green-500 rounded-full p-1.5 shadow-lg" />
-                    )}
-                  </div>
+                {isSubmitting ? "Saving..." : "Start Learning"}
+                <ArrowRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
+              </Button>
+            </motion.div>
 
-                  <p className="text-sm text-gray-700 mb-4 min-h-[3em]">{language.description}</p>
-
-                  <div className="space-y-2 mb-4 text-xs text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Users className={`w-4 h-4 ${language.textColor} opacity-75`} />
-                      <span>{language.speakers}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className={`w-4 h-4 ${language.textColor} opacity-75`} />
-                      <span>{language.difficulty}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className={`w-4 h-4 ${language.textColor} opacity-75`} />
-                      <span>Family: {language.family}</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-gray-500 italic mb-4 min-h-[2.5em]">{language.culturalNote}</p>
-
-                  <div className="border-t border-gray-300 pt-4">
-                    <h4 className={`text-sm font-semibold mb-2 ${language.textColor}`}>Course Features:</h4>
-                    <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-700">
-                      <div>
-                        <span role="img" aria-label="books" className="text-xl">📚</span>
-                        <p>Interactive Lessons</p>
-                      </div>
-                      <div>
-                        <span role="img" aria-label="theater masks" className="text-xl">🎭</span>
-                        <p>Cultural Content</p>
-                      </div>
-                      <div>
-                        <span role="img" aria-label="speech bubble" className="text-xl">🗣️</span>
-                        <p>Real Conversations</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className={`
-                    mt-6 w-full h-1.5 rounded-full transition-all duration-300
-                    ${isSelected 
-                      ? `bg-gradient-to-r ${language.color}` 
-                      : 'bg-gray-300'
-                    }
-                  `} />
+            {existingUserLangs && existingUserLangs.length > 0 && (
+              <motion.div variants={itemVariant} className="mt-2 pt-2 border-t border-gray-700 w-full">
+                <h3 className="text-base font-semibold text-center mb-2 text-white">Languages you've added:</h3>
+                <div className="flex flex-wrap justify-center gap-4">
+                  {existingUserLangs.map(lang => (
+                    <span key={lang.langCode} className="bg-gray-700 text-gray-200 px-2 py-0.5 rounded-full text-xs">
+                      {lang.langName}
+                    </span>
+                  ))}
                 </div>
               </motion.div>
-            );
-          })}
-        </div>
-
-        <motion.div variants={itemVariant} className="text-center">
-          <Button
-            onClick={handleContinue}
-            disabled={!selectedLanguageId || isSubmitting || !authUser}
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg py-3 px-10 rounded-full shadow-lg transition-transform duration-200 hover:scale-105 disabled:opacity-70 group"
-          >
-            {isSubmitting ? "Saving..." : "Start Learning"}
-            <ArrowRight className="ml-2 h-5 w-5 transform transition-transform duration-300 group-hover:translate-x-1" />
-          </Button>
+            )}
+          </div>
         </motion.div>
-        
-        {existingUserLangs && existingUserLangs.length > 0 && (
-          <motion.div variants={itemVariant} className="mt-12 pt-8 border-t border-gray-700">
-            <h3 className="text-xl font-semibold text-center mb-4 text-gray-300">Languages you've added:</h3>
-            <div className="flex flex-wrap justify-center gap-3">
-              {existingUserLangs.map(lang => (
-                <span key={lang.langCode} className="bg-gray-700 text-gray-200 px-3 py-1 rounded-full text-sm">
-                  {lang.langName}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
+      </div>
     </div>
   );
 } 
