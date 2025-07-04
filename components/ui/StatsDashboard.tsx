@@ -76,17 +76,20 @@ const columnVariants = {
 export default function StatsDashboard() {
   return (
     <div className="w-full p-4 sm:p-6">
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Column 1 */}
         <div className="space-y-6">
-          <LearningMetricsSection />
-          <TimeBasedStatsSection />
+          <LearningMetricsSection stats={placeholderStats.learningMetrics} />
+          <TimeBasedStatsSection stats={placeholderStats.timeBasedStats} />
         </div>
+        {/* Column 2 */}
         <div className="space-y-6">
-          <ConsistencyReviewSection />
-          <GamificationAchievementsSection />
+          <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
+          <GamificationAchievementsSection stats={placeholderStats.gamification} />
         </div>
+        {/* Column 3 */}
         <div className="space-y-6">
-          <PersonalInsightsSection />
+          <PersonalInsightsSection stats={placeholderStats.personalInsights} />
           <CustomGoalsSection />
         </div>
       </section>

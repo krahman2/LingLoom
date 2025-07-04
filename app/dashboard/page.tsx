@@ -143,12 +143,34 @@ export default function DashboardPage() {
 
       {/* Top Header */}
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-sm">
-        <div className="w-full flex h-16 items-center justify-between px-4 md:px-6">
-          <Link href="/" className="flex items-center">
+        <div className="w-full flex h-16 items-center px-4 md:px-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center flex-shrink-0">
             <Image src="/images/logo.png" alt="LingLoom Logo" width={40} height={40} priority />
           </Link>
-          <div className="flex items-center gap-3 md:gap-4">
-            {/* Language Switcher Dropdown */}
+
+          {/* Tab Navigation - Centered */}
+          <div className="flex-1 flex justify-center">
+            <div className="flex space-x-2 sm:space-x-4 md:space-x-8">
+              {TABS.map((tab, index) => (
+                <button
+                  key={tab.name}
+                  onClick={() => api?.scrollTo(index)}
+                  className={`flex flex-col sm:flex-row items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    current === index
+                      ? 'text-primary bg-primary/10'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  <span className="hidden sm:inline">{tab.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Language Switcher/User Menu */}
+          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
             {userLanguages && userLanguages.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -201,25 +223,6 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-        {/* Tab Navigation for swipeable content */}
-        <nav className="flex justify-center border-t border-gray-800">
-          <div className="flex space-x-2 sm:space-x-4 md:space-x-8 p-2">
-            {TABS.map((tab, index) => (
-              <button
-                key={tab.name}
-                onClick={() => api?.scrollTo(index)}
-                className={`flex flex-col sm:flex-row items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  current === index
-                    ? 'text-primary bg-primary/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <tab.icon className="h-5 w-5" />
-                <span className="hidden sm:inline">{tab.name}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
       </header>
       
       {/* Main Content Area */}
