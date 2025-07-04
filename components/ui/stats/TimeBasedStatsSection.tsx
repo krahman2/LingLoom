@@ -47,9 +47,9 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center text-gray-400 mb-1.5">
-        <Icon className="w-3 h-3 mr-2" />
-        <h3 className="text-xs font-medium">{title}</h3>
+      <div className="flex items-center text-gray-400 mb-2">
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white">{children}</div>
     </motion.div>
@@ -60,18 +60,18 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
 const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ title, chartType }) => {
   return (
     <motion.div 
-      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-2"
       variants={interactiveElementVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
       <div className="flex items-center text-gray-400 mb-1.5">
-        <PieChart className="w-3 h-3 mr-2" />
-        <h3 className="text-xs font-medium">{title}</h3>
+        <PieChart className="w-4 h-4 mr-2" />
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
-      <div className="text-center text-gray-500 py-6">
-        <p className="text-xs">({chartType} Placeholder)</p>
+      <div className="text-center text-gray-500 py-4">
+        <p className="text-sm">({chartType} Placeholder)</p>
         <p className="text-xs mt-1">Data for Vocabulary, Grammar, Listening, Speaking, Reading, Video watching</p>
       </div>
     </motion.div>
@@ -81,18 +81,18 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string }> = ({ titl
 export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
   return (
     <motion.div 
-      className="bg-gray-900 border border-gray-800 rounded-xl p-3 w-full h-full"
+      className="bg-gray-900 border border-gray-700 rounded-xl p-4 w-full"
       variants={sectionVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-3">
         <Clock className="w-5 h-5 text-blue-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Time-Based Stats</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <StatCard title="Streak (Consecutive Days)" icon={Zap}>
+        <StatCard title="Current Streak" icon={Zap}>
           {stats.streak} days
         </StatCard>
         <StatCard title="Total Practice Time" icon={Clock}>
@@ -101,14 +101,20 @@ export default function TimeBasedStatsSection({ stats }: TimeBasedStatsProps) {
         <StatCard title="Immersion Time" icon={Film}>
           {stats.immersionTime}
         </StatCard>
-        <StatCard title="Average Daily Practice" icon={CalendarClock}>
+        <StatCard title="Daily Practice Average" icon={CalendarClock}>
           {stats.avgDailyPracticeTime}
-          {stats.avgDailyPracticeTimePeriod && 
-            <p className="text-xs text-gray-500 mt-1 font-normal">({stats.avgDailyPracticeTimePeriod})</p>
-          }
+          <p className="text-xs text-gray-500 mt-1 font-normal">
+            {stats.avgDailyPracticeTimePeriod}
+          </p>
         </StatCard>
-        <div className="sm:col-span-2">
-          <ChartPlaceholder title="Time Breakdown" chartType="Pie Chart" />
+      </div>
+      
+      {/* Pie Chart Placeholder */}
+      <div className="mt-4 bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-400 mb-2">Time Breakdown</h3>
+        <div className="flex items-center justify-center h-32 text-gray-500">
+          <PieChart className="w-8 h-8 mr-2" />
+          <span className="text-sm">Pie Chart Placeholder</span>
         </div>
       </div>
     </motion.div>

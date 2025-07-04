@@ -45,9 +45,9 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center text-gray-400 mb-1.5">
-        <Icon className="w-3 h-3 mr-2" />
-        <h3 className="text-xs font-medium">{title}</h3>
+      <div className="flex items-center text-gray-400 mb-2">
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white">{children}</div>
     </motion.div>
@@ -57,13 +57,13 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
 export default function LearningMetricsSection({ stats }: LearningMetricsProps) {
   return (
     <motion.div 
-      className="bg-gray-900 border border-gray-700 rounded-xl p-3 w-full h-full"
+      className="bg-gray-900 border border-gray-700 rounded-xl p-4 w-full"
       variants={sectionVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-3">
         <Brain className="w-5 h-5 text-purple-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Learning Metrics</h2>
       </div>

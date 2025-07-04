@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import React from 'react';
-import { Award, Star, ShieldCheck } from 'lucide-react';
+import { Award, Star, ShieldCheck, Trophy } from 'lucide-react';
 
 interface GamificationAchievementsProps {
   stats: {
@@ -40,15 +40,15 @@ const interactiveElementVariants = {
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
     <motion.div 
-      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col h-full"
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-2 flex flex-col h-full"
       variants={interactiveElementVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
       <div className="flex items-center text-gray-400 mb-1.5">
-        <Icon className="w-3 h-3 mr-2" />
-        <h3 className="text-xs font-medium">{title}</h3>
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white mt-auto">{children}</div>
     </motion.div>
@@ -60,13 +60,13 @@ const ProgressBar: React.FC<{ current: number; max: number; label: string }> = (
   const percentage = max > 0 ? (current / max) * 100 : 0;
   return (
     <motion.div 
-      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-2"
       variants={interactiveElementVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+      <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
         <span>{label}</span>
         <span>{current} / {max} XP</span>
       </div>
@@ -83,46 +83,57 @@ const ProgressBar: React.FC<{ current: number; max: number; label: string }> = (
 export default function GamificationAchievementsSection({ stats }: GamificationAchievementsProps) {
   return (
     <motion.div 
-      className="bg-gray-900 border border-gray-800 rounded-xl p-3 w-full h-full"
+      className="bg-gray-900 border border-gray-700 rounded-xl p-4 w-full"
       variants={sectionVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center mb-4">
-        <Award className="w-5 h-5 text-yellow-400 mr-2" />
+      <div className="flex items-center mb-3">
+        <Trophy className="w-5 h-5 text-yellow-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Gamification & Achievements</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <StatCard title="Current Level" icon={Star}>
-          Level {stats.level}
-        </StatCard>
-        <ProgressBar current={stats.currentXp} max={stats.xpToNextLevel} label="XP to Next Level" />
-        <div className="sm:col-span-2">
-          <div className="flex items-center text-gray-400 mb-1.5">
-            <ShieldCheck className="w-3 h-3 mr-1.5" />
-            <h3 className="text-xs font-medium">Badges & Milestones</h3>
+      <div className="space-y-4">
+        {/* Current Level */}
+        <motion.div 
+          className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col"
+          variants={interactiveElementVariants}
+          initial="initial"
+          whileHover="hover"
+          whileTap="hover"
+        >
+          <div className="flex items-center text-gray-400 mb-2">
+            <Star className="w-4 h-4 mr-2" />
+            <h3 className="text-sm font-medium">Current Level</h3>
           </div>
-          <motion.div 
-            className="bg-gray-800/50 border border-gray-700 rounded-lg p-3"
-            variants={interactiveElementVariants}
-            initial="initial"
-            whileHover="hover"
-            whileTap="hover"
-          >
-            {stats.badges.length > 0 ? (
-              <ul className="space-y-1.5">
-                {stats.badges.map((badge, index) => (
-                  <li key={index} className="text-xs text-gray-300 flex items-center">
-                    <Award className="w-3 h-3 mr-1.5 text-yellow-500 flex-shrink-0" />
-                    {badge}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-gray-500">No badges earned yet.</p>
-            )}
-          </motion.div>
+          <div className="text-lg font-bold text-white">Level {stats.level}</div>
+        </motion.div>
+        
+        {/* XP Progress */}
+        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-400">XP Progress</h3>
+            <span className="text-xs text-gray-500">{stats.currentXp}/{stats.xpToNextLevel}</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              className="bg-green-500 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${(stats.currentXp / stats.xpToNextLevel) * 100}%` }}
+            />
+          </div>
+        </div>
+        
+        {/* Badges */}
+        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Recent Badges</h3>
+          <div className="space-y-2">
+            {stats.badges.slice(0, 3).map((badge, index) => (
+              <div key={index} className="flex items-center text-gray-300">
+                <Award className="w-4 h-4 mr-2 text-yellow-400" />
+                <span className="text-sm">{badge}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>

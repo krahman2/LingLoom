@@ -75,22 +75,23 @@ const columnVariants = {
 
 export default function StatsDashboard() {
   return (
-    <div className="w-full p-4 sm:p-6">
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Column 1 */}
-        <div className="space-y-6">
+    <div className="w-full mt-8 px-4 md:px-6">
+      {/* Use flex-row on xl screens with larger-width columns and proper spacing */}
+      <section className="flex flex-col xl:flex-row gap-y-6 xl:gap-x-8 xl:justify-center">
+        {/* Column 1 - Larger width constraint */}
+        <div className="flex-1 xl:max-w-lg flex flex-col gap-4">
           <LearningMetricsSection stats={placeholderStats.learningMetrics} />
           <TimeBasedStatsSection stats={placeholderStats.timeBasedStats} />
         </div>
-        {/* Column 2 */}
-        <div className="space-y-6">
+        {/* Column 2 - Larger width constraint */}
+        <div className="flex-1 xl:max-w-lg flex flex-col gap-4">
           <ConsistencyReviewSection stats={placeholderStats.consistencyReview} />
           <GamificationAchievementsSection stats={placeholderStats.gamification} />
         </div>
-        {/* Column 3 */}
-        <div className="space-y-6">
+        {/* Column 3 - Larger width constraint */}
+        <div className="flex-1 xl:max-w-lg flex flex-col gap-4">
           <PersonalInsightsSection stats={placeholderStats.personalInsights} />
-          <CustomGoalsSection />
+          {/* Removed duplicate CustomGoalsSection to keep dashboard compact */}
         </div>
       </section>
     </div>

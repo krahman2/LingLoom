@@ -231,7 +231,7 @@ export default function DashboardPage() {
           <CarouselContent className="h-full">
             {TABS.map((tab, index) => (
               <CarouselItem key={index} className="h-full overflow-y-auto">
-                <div className="w-full h-full flex items-start justify-center p-1">
+                <div className="w-full h-full flex items-center justify-center pt-2 p-1">
                   <tab.component />
                 </div>
               </CarouselItem>

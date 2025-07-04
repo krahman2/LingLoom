@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import React from 'react';
-import { CalendarDays, BarChart3, CheckCircle, TrendingUp, Target } from 'lucide-react';
+import { CalendarDays, BarChart3, CheckCircle, TrendingUp, Target, Calendar, BarChart, Clock } from 'lucide-react';
 
 interface ConsistencyReviewProps {
   stats: {
@@ -38,15 +38,15 @@ const interactiveElementVariants = {
 const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.ElementType }>> = ({ title, icon: Icon, children }) => {
   return (
     <motion.div 
-      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col h-full"
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-2 flex flex-col h-full"
       variants={interactiveElementVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
       <div className="flex items-center text-gray-400 mb-1.5">
-        <Icon className="w-3 h-3 mr-2" />
-        <h3 className="text-xs font-medium">{title}</h3>
+        <Icon className="w-4 h-4 mr-2" />
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
       <div className="text-lg font-bold text-white mt-auto">{children}</div>
     </motion.div>
@@ -57,19 +57,19 @@ const StatCard: React.FC<React.PropsWithChildren<{ title: string; icon: React.El
 const ChartPlaceholder: React.FC<{ title: string; chartType: string; description?: string }> = ({ title, chartType, description }) => {
   return (
     <motion.div 
-      className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 h-full flex flex-col"
+      className="bg-gray-800/50 border border-gray-700 rounded-lg p-2 h-full flex flex-col"
       variants={interactiveElementVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
       <div className="flex items-center text-gray-400 mb-1.5">
-        {chartType === "Heatmap Calendar" && <CalendarDays className="w-3 h-3 mr-2" />}
-        {chartType === "Bar Graph" && <BarChart3 className="w-3 h-3 mr-2" />}
-        <h3 className="text-xs font-medium">{title}</h3>
+        {chartType === "Heatmap Calendar" && <CalendarDays className="w-4 h-4 mr-2" />}
+        {chartType === "Bar Graph" && <BarChart3 className="w-4 h-4 mr-2" />}
+        <h3 className="text-sm font-medium">{title}</h3>
       </div>
-      <div className="text-center text-gray-500 py-6 flex-grow flex flex-col justify-center items-center">
-        <p className="text-xs">({chartType} Placeholder)</p>
+      <div className="text-center text-gray-500 py-4 flex-grow flex flex-col justify-center items-center">
+        <p className="text-sm">({chartType} Placeholder)</p>
         {description && <p className="text-xs mt-1">{description}</p>}
       </div>
     </motion.div>
@@ -79,25 +79,64 @@ const ChartPlaceholder: React.FC<{ title: string; chartType: string; description
 export default function ConsistencyReviewSection({ stats }: ConsistencyReviewProps) {
   return (
     <motion.div 
-      className="bg-gray-900 border border-gray-800 rounded-xl p-3 w-full h-full"
+      className="bg-gray-900 border border-gray-700 rounded-xl p-4 w-full"
       variants={sectionVariants}
       initial="initial"
       whileHover="hover"
       whileTap="hover"
     >
-      <div className="flex items-center mb-4">
-        <Target className="w-5 h-5 text-red-400 mr-2" />
+      <div className="flex items-center mb-3">
+        <Target className="w-5 h-5 text-green-400 mr-2" />
         <h2 className="text-lg font-semibold text-white">Consistency & Review</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <ChartPlaceholder title="Heatmap Calendar" chartType="Heatmap Calendar" description="Daily activity streaks" />
-        <ChartPlaceholder title="Days Practiced per Week/Month" chartType="Bar Graph" />
-        <StatCard title="Review Accuracy Rate" icon={CheckCircle}>
-          {stats.reviewAccuracyRate}%
-        </StatCard>
-        <StatCard title="Time to Mastery (Estimate)" icon={TrendingUp}>
-          {stats.timeToMastery}
-        </StatCard>
+        {/* Heatmap Calendar */}
+        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Practice Calendar</h3>
+          <div className="flex items-center justify-center h-24 text-gray-500">
+            <Calendar className="w-6 h-6 mr-2" />
+            <span className="text-sm">Heatmap Calendar</span>
+          </div>
+        </div>
+        
+        {/* Bar Graph */}
+        <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Weekly Progress</h3>
+          <div className="flex items-center justify-center h-24 text-gray-500">
+            <BarChart className="w-6 h-6 mr-2" />
+            <span className="text-sm">Bar Graph</span>
+          </div>
+        </div>
+        
+        {/* Review Accuracy */}
+        <motion.div 
+          className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col"
+          variants={interactiveElementVariants}
+          initial="initial"
+          whileHover="hover"
+          whileTap="hover"
+        >
+          <div className="flex items-center text-gray-400 mb-2">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            <h3 className="text-sm font-medium">Review Accuracy</h3>
+          </div>
+          <div className="text-lg font-bold text-white">{stats.reviewAccuracyRate}%</div>
+        </motion.div>
+        
+        {/* Time to Mastery */}
+        <motion.div 
+          className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col"
+          variants={interactiveElementVariants}
+          initial="initial"
+          whileHover="hover"
+          whileTap="hover"
+        >
+          <div className="flex items-center text-gray-400 mb-2">
+            <Clock className="w-4 h-4 mr-2" />
+            <h3 className="text-sm font-medium">Time to Mastery</h3>
+          </div>
+          <div className="text-lg font-bold text-white">{stats.timeToMastery}</div>
+        </motion.div>
       </div>
     </motion.div>
   );
